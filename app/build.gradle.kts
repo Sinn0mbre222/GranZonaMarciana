@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.granzonamarciana"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -43,9 +43,8 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("androidx.room:room-runtime:2.5.0")
     annotationProcessor ("androidx.room:room-compiler:2.5.0")
-
     implementation ("de.svenkubiak:jBCrypt:0.4.3")
-
     implementation("com.squareup.picasso:picasso:2.8")
+
 
 }

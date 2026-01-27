@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/background_dark">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="75dp"
+            android:layout_marginTop="40dp"
+            android:src="@drawable/ic_granzonamarciana"
+            android:contentDescription="Logo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Menú Espectador"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vota y sigue el reality"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="40dp"/>
+
+        <!-- Opciones espectador -->
+        <Button
+            android:id="@+id/btnMyProfile"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="12dp"
+            android:text="Mi Perfil"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:gravity="start|center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:drawablePadding="12dp"
+            android:backgroundTint="@color/button_menu_bg"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnRateParticipants"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="12dp"
+            android:text="Votar Participantes"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:gravity="start|center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:drawablePadding="12dp"
+            android:backgroundTint="@color/button_menu_bg"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnAvailableRatings"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="12dp"
+            android:text="Galas Disponibles"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:gravity="start|center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:drawablePadding="12dp"
+            android:backgroundTint="@color/button_menu_bg"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnMyRatings"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="12dp"
+            android:text="Mis Votaciones"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:gravity="start|center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:drawablePadding="12dp"
+            android:backgroundTint="@color/button_menu_bg"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnViewEditions"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="12dp"
+            android:text="Ver Ediciones"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:gravity="start|center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:drawablePadding="12dp"
+            android:backgroundTint="@color/button_menu_bg"
+            android:textColor="@color/white" />
+
+        <!-- Separador -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:background="@color/text_secondary" />
+
+        <Button
+            android:id="@+id/btnViewNews"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="12dp"
+            android:text="Ver Noticias"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:gravity="start|center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:drawablePadding="12dp"
+            android:backgroundTint="@color/button_menu_bg"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnViewParticipants"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="12dp"
+            android:text="Ver Participantes"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:gravity="start|center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:drawablePadding="12dp"
+            android:backgroundTint="@color/button_menu_bg"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Cerrar Sesión"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:gravity="start|center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:drawablePadding="12dp"
+            android:backgroundTint="@color/button_logout_bg"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+</ScrollView>

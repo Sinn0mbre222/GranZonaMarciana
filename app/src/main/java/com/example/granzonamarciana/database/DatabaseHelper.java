@@ -9,6 +9,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
 import com.example.granzonamarciana.dao.AdministradorDao;
+import com.example.granzonamarciana.dao.SolicitudDao;
 import com.example.granzonamarciana.entity.Administrador;
 import com.example.granzonamarciana.entity.Solicitud;
 
@@ -22,6 +23,7 @@ public abstract class DatabaseHelper extends RoomDatabase {
 
     //Añadir aquí los demás dao
     public abstract AdministradorDao administradorDao();
+    public abstract SolicitudDao solicitudDao();
 
     private static volatile DatabaseHelper instanciaBD;
 
@@ -34,4 +36,5 @@ public abstract class DatabaseHelper extends RoomDatabase {
         }
         return instanciaBD;
     }
+
 }

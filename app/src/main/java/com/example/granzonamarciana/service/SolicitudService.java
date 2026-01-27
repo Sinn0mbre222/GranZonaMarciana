@@ -41,8 +41,6 @@ public class SolicitudService {
         executorService.execute(() -> {
             solicitud.setEstado(EstadoSolicitud.ACEPTADA);
             solicitudDao.update(solicitud);
-            // AQUÍ: Más adelante añadiremos la lógica para cancelar
-            // el resto si se llega al máximo [cite: 71, 72]
         });
     }
 

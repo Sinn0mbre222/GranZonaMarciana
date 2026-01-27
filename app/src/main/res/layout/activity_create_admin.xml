@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/background_dark">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Título -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Crear Administrador"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="32dp"/>
+
+        <!-- Campos del formulario -->
+        <EditText
+            android:id="@+id/etUsername"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:padding="16dp"
+            android:background="@drawable/edittext_background"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_hint"
+            android:textSize="16sp"
+            android:hint="Nombre de usuario"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:padding="16dp"
+            android:background="@drawable/edittext_background"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_hint"
+            android:textSize="16sp"
+            android:hint="Contraseña"
+            android:inputType="textPassword" />
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:padding="16dp"
+            android:background="@drawable/edittext_background"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_hint"
+            android:textSize="16sp"
+            android:hint="Nombre"
+            android:inputType="textPersonName" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <EditText
+                android:id="@+id/etLastName1"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:hint="1º Apellido"
+                android:background="@drawable/edittext_background"
+                android:padding="16dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/text_hint" />
+
+            <EditText
+                android:id="@+id/etLastName2"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:hint="2º Apellido"
+                android:background="@drawable/edittext_background"
+                android:padding="16dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/text_hint" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:padding="16dp"
+            android:background="@drawable/edittext_background"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_hint"
+            android:textSize="16sp"
+            android:hint="Correo electrónico"
+            android:inputType="textEmailAddress" />
+
+        <EditText
+            android:id="@+id/etPhone"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:padding="16dp"
+            android:background="@drawable/edittext_background"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_hint"
+            android:textSize="16sp"
+            android:hint="Teléfono"
+            android:inputType="phone" />
+
+        <EditText
+            android:id="@+id/etImageUrl"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:padding="16dp"
+            android:background="@drawable/edittext_background"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_hint"
+            android:textSize="16sp"
+            android:hint="URL de imagen (opcional)"
+            android:inputType="text" />
+
+        <!-- Botones -->
+        <Button
+            android:id="@+id/btnCreateUser"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Crear Administrador"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="@color/button_login_bg" />
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="16dp"
+            android:text="Cancelar"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:backgroundTint="@color/button_register_bg" />
+
+    </LinearLayout>
+</ScrollView>

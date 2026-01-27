@@ -13,8 +13,13 @@
 
     <color name="button_login_bg">#FF3B30</color>
     <color name="button_register_bg">#2C2C2C</color>
+    <color name="buttonBackground">#FF3B30</color>
     <color name="button_pressed">#CC2F26</color>
 
     <color name="edittext_stroke">#333333</color>
     <color name="icon_tint">#FF3B30</color>
+
+    <color name="button_menu_bg">#2A2A3A</color>
+    <color name="button_logout_bg">#C54C3A</color>
+    <color name="button_delete_bg">#FF4444</color>
 </resources>

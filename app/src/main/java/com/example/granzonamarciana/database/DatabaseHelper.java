@@ -10,9 +10,11 @@ import androidx.room.TypeConverters;
 
 import com.example.granzonamarciana.dao.AdministradorDao;
 import com.example.granzonamarciana.entity.Administrador;
+import com.example.granzonamarciana.entity.Solicitud;
 
 @Database(entities = {
         Administrador.class,
+        Solicitud.class,
         // Agregar aquí las demás clases que se vayan creando
 }, version = 1)
 @TypeConverters({LocalDateConverter.class})

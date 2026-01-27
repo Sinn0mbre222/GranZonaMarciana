@@ -37,10 +37,18 @@ public class SolicitudService {
     }
 
     // Aceptar Solicitud
-    public void aceptarSolicitud(Solicitud solicitud) {
+    public void aceptarSolicitud(Solicitud solicitud, int maxParticipantes) {
         executorService.execute(() -> {
-            solicitud.setEstado(EstadoSolicitud.ACEPTADA);
-            solicitudDao.update(solicitud);
+            int aceptadas = solicitudDao.countAceptadasByEdition(solicitud.getEditionId());
+
+            if (aceptadas < maxParticipantes) {
+                solicitud.setEstado(EstadoSolicitud.ACEPTADA);
+                solicitudDao.update(solicitud);
+
+                if (aceptadas + 1 == maxParticipantes) {
+                    solicitudDao.cancelarRestantes(solicitud.getEditionId(), EstadoSolicitud.RECHAZADA);
+                }
+            }
         });
     }
 

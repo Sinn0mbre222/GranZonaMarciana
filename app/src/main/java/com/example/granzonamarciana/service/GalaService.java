@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData;
 import com.example.granzonamarciana.database.DatabaseHelper;
 import com.example.granzonamarciana.dao.GalaDao;
 import com.example.granzonamarciana.entity.Gala;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,13 +19,16 @@ public class GalaService {
     public GalaService(Application application) {
         DatabaseHelper db = DatabaseHelper.getInstance(application);
         galaDao = db.galaDao();
-        // Usamos un pool de hilos para operaciones en segundo plano
         this.executorService = Executors.newFixedThreadPool(4);
     }
 
-    // Insertar una gala
-    public void insert(Gala gala) {
+    // Insertar una gala si esta entre las fechas de inicio y fin
+    public boolean insert(Gala gala, LocalDate inicioEdicion, LocalDate finEdicion) {
+        if (gala.getFecha().isBefore(inicioEdicion) || gala.getFecha().isAfter(finEdicion)) {
+            return false;
+        }
         executorService.execute(() -> galaDao.insert(gala));
+        return true;
     }
 
     // Obtener las galas de una edición

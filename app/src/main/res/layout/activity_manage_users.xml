@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_dark">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:paddingBottom="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gestión de Usuarios"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_gravity="center_horizontal"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="20dp"
+            android:gravity="center_vertical">
+
+            <Spinner
+                android:id="@+id/spinnerRoleFilter"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:background="@drawable/edittext_background"
+                android:padding="10dp"
+                android:layout_marginEnd="10dp"/>
+
+            <Button
+                android:id="@+id/btnAddUser"
+                android:layout_width="wrap_content"
+                android:layout_height="56dp"
+                android:text="+"
+                android:textSize="24sp"
+                android:backgroundTint="@color/button_menu_bg"
+                android:textColor="@color/white"/>
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/etSearchUser"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/edittext_background"
+            android:hint="Buscar usuario..."
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_hint"
+            android:padding="16dp"
+            android:inputType="text"/>
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/lvUsers"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:divider="@color/white"
+        android:dividerHeight="1dp"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:listitem="@layout/item_user"/>
+
+</LinearLayout>

@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GranZonaMarciana">
         <activity
+            android:name=".activity.MenuAdminActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.LoginActivity"
             android:exported="true">
             <intent-filter>
@@ -23,6 +26,14 @@
         <activity
             android:name=".activity.MainMenuActivity"
             android:exported="true" />
+
+        <activity
+            android:name=".activity.MenuConcursanteActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.MenuEspectadorActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

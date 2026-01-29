@@ -103,66 +103,47 @@ public class LoginActivity extends AppCompatActivity {
         String username = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
-        //Validar usuario y contraseña
-        if (username.isEmpty()) {
-            etUsername.setError("Ingresa el usuario");
-            etUsername.requestFocus();
+        if (username.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (password.isEmpty()) {
-            etPassword.setError("Ingresa la contaseña");
-            etPassword.requestFocus();
-            return;
-        }
-
-        Toast.makeText(this, "Iniciando sesión en el sistema...", Toast.LENGTH_SHORT).show();
-
-        // 1. Primero intentar como ADMIN
-        loginAdmin(username, password);
+        // Empezamos la cadena de búsqueda
+        intentarLoginAdmin(username, password);
     }
 
-    private void loginAdmin(final String username, final String password) {
-        administradorService.buscarAdministradorPorUsername(username).observe(this, administrador -> {
-            if (administrador != null && BCrypt.checkpw(password, administrador.getPassword())) {
-                // Login exitoso como ADMIN
-                guardarUsuarioLogueado(administrador.getId(), administrador.getUsername(), TipoRol.ADMINISTRADOR);
+    private void intentarLoginAdmin(String username, String password) {
+        administradorService.buscarAdministradorPorUsername(username).observe(this, admin -> {
+            if (admin != null && BCrypt.checkpw(password, admin.getPassword())) {
+                guardarUsuarioLogueado(admin.getId(), admin.getUsername(), TipoRol.ADMINISTRADOR);
                 redirigirSegunRol();
             } else {
-                // Credenciales incorrectas
-                Toast.makeText(LoginActivity.this,
-                        "Usuario o contraseña incorrectos",
-                        Toast.LENGTH_LONG).show();
+                // Si no es admin, probamos con Concursante
+                intentarLoginConcursante(username, password);
             }
         });
     }
 
-    private void loginConcursante(final String username, final String password) {
-        concursanteService.buscarConcursantePorUsername(username).observe(this, concursante -> {
-            if (concursante != null && BCrypt.checkpw(password, concursante.getPassword())) {
-                // Login exitoso como CONCURSANTE
-                guardarUsuarioLogueado(concursante.getId(), concursante.getUsername(), TipoRol.CONCURSANTE);
+    private void intentarLoginConcursante(String username, String password) {
+        concursanteService.buscarConcursantePorUsername(username).observe(this, concu -> {
+            if (concu != null && BCrypt.checkpw(password, concu.getPassword())) {
+                guardarUsuarioLogueado(concu.getId(), concu.getUsername(), TipoRol.CONCURSANTE);
                 redirigirSegunRol();
             } else {
-                // Credenciales incorrectas
-                Toast.makeText(LoginActivity.this,
-                        "Usuario o contraseña incorrectos",
-                        Toast.LENGTH_LONG).show();
+                // Si no es concursante, probamos con Espectador
+                intentarLoginEspectador(username, password);
             }
         });
     }
 
-    private void loginEspectador(final String username, final String password) {
-        espectadorService.buscarEspectadorPorUsername(username).observe(this, espectador -> {
-            if (espectador != null && BCrypt.checkpw(password, espectador.getPassword())) {
-                // Login exitoso como ESPECTADOR
-                guardarUsuarioLogueado(espectador.getId(), espectador.getUsername(), TipoRol.ESPECTADOR);
+    private void intentarLoginEspectador(String username, String password) {
+        espectadorService.buscarEspectadorPorUsername(username).observe(this, espec -> {
+            if (espec != null && BCrypt.checkpw(password, espec.getPassword())) {
+                guardarUsuarioLogueado(espec.getId(), espec.getUsername(), TipoRol.ESPECTADOR);
                 redirigirSegunRol();
             } else {
-                // Credenciales incorrectas
-                Toast.makeText(LoginActivity.this,
-                        "Usuario o contraseña incorrectos",
-                        Toast.LENGTH_LONG).show();
+                // Si llegamos aquí y no se ha encontrado en ninguna tabla
+                Toast.makeText(this, "Credenciales incorrectas en todos los roles", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -191,14 +172,14 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent;
         switch (rol) {
             case "ADMINISTRADOR":
-                intent = new Intent(this, MainMenuActivity.class);
+                intent = new Intent(this, MenuAdminActivity.class);
                 break;
-            /*case "CONCURSANTE":
-                intent = new Intent(this, MainMenuActivity.class);
+            case "CONCURSANTE":
+                intent = new Intent(this, MenuConcursanteActivity.class);
                 break;
             case "ESPECTADOR":
-                intent = new Intent(this, MainMenuActivity.class);
-                break;*/
+                intent = new Intent(this, MenuEspectadorActivity.class);
+                break;
             default:
                 intent = new Intent(this, MainMenuActivity.class);
         }
@@ -209,8 +190,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private void popularteBD() {
         PopulateBD populateBD = new PopulateBD(this);
+        populateBD.deleteBD(this);
         populateBD.populateAdministrador();
-        // populateBD.populateConcursante();
-        // populateBD.populateEspectador();
+        populateBD.populateConcursante();
+        populateBD.populateEspectador();
     }
 }

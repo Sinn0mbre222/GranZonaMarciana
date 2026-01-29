@@ -5,30 +5,22 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.granzonamarciana.R;
 
-public class MainMenuActivity extends AppCompatActivity {
+public class MenuAdminActivity extends AppCompatActivity {
 
     private Button btnLogout;
-    private TextView tvWelcome;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_menu);
-
+        setContentView(R.layout.activity_admin_menu);
         btnLogout = findViewById(R.id.btnLogout);
-        tvWelcome = findViewById(R.id.tvWelcome);
 
         SharedPreferences sharedPreferences = getSharedPreferences("granZMUser", MODE_PRIVATE);
-        String nombreUsuario = sharedPreferences.getString("username", "Usuario");
-
-        tvWelcome.setText("Bienvenido/a, " + nombreUsuario);
 
         btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -38,7 +30,7 @@ public class MainMenuActivity extends AppCompatActivity {
                         .clear()
                         .apply();
 
-                Intent intent = new Intent(MainMenuActivity.this, LoginActivity.class);
+                Intent intent = new Intent(MenuAdminActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
             }

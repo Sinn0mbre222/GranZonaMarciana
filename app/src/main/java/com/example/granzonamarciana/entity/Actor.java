@@ -7,7 +7,7 @@ public abstract class Actor extends DomainEntity {
     private String password;
     private TipoRol rol;
     private String nombre;
-    private String primerApellidp;
+    private String primerApellido;
     private String segundoApellido;
     private String email;
     private String telefono;
@@ -16,18 +16,19 @@ public abstract class Actor extends DomainEntity {
 
     // Constructor
 
-    public Actor(String telefono, TipoRol rol, String nombre, String primerApellidp, String segundoApellido,
-                 String email, String imagenUrl, LocalDate fechaRegistro, String username, String password) {
-        this.telefono = telefono;
-        this.rol = rol;
-        this.nombre = nombre;
-        this.primerApellidp = primerApellidp;
-        this.segundoApellido = segundoApellido;
-        this.email = email;
-        this.imagenUrl = imagenUrl;
-        this.fechaRegistro = fechaRegistro;
+    public Actor(String username, String password, String nombre, String primerApellido,
+                 String segundoApellido, String telefono, String email, String imagenUrl,
+                 TipoRol rol, LocalDate fechaRegistro) {
         this.username = username;
         this.password = password;
+        this.nombre = nombre;
+        this.primerApellido = primerApellido;
+        this.segundoApellido = segundoApellido;
+        this.telefono = telefono;
+        this.email = email;
+        this.imagenUrl = imagenUrl;
+        this.rol = rol;
+        this.fechaRegistro = fechaRegistro;
     }
 
     // Getters y Setters
@@ -64,12 +65,12 @@ public abstract class Actor extends DomainEntity {
         this.nombre = nombre;
     }
 
-    public String getPrimerApellidp() {
-        return primerApellidp;
+    public String getPrimerApellido() {
+        return primerApellido;
     }
 
-    public void setPrimerApellidp(String primerApellidp) {
-        this.primerApellidp = primerApellidp;
+    public void setPrimerApellido(String primerApellidp) {
+        this.primerApellido = primerApellido;
     }
 
     public String getSegundoApellido() {

@@ -31,7 +31,7 @@ public class EspectadorService {
         return espectadorDao.findById(id);
     }
 
-    public LiveData<Espectador> obtenerPorUsername(String username) {
+    public LiveData<Espectador> buscarEspectadorPorUsername(String username) {
         return espectadorDao.findByUsername(username);
     }
 }

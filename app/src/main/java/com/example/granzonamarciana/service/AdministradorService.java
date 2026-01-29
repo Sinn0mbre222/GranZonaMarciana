@@ -38,7 +38,7 @@ public class AdministradorService {
     }
 
     public LiveData<List<Administrador>> listarAdministradores() {
-        return administradorDao.findALl();
+        return administradorDao.findAll();
     }
 
     public LiveData<Administrador> buscarAdministradorPorId(int id) {

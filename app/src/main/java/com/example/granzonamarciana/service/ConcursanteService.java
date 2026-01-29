@@ -32,7 +32,7 @@ public class ConcursanteService {
         return concursanteDao.findById(id);
     }
 
-    public LiveData<Concursante> obtenerPorUsername(String username) {
+    public LiveData<Concursante> buscarConcursantePorUsername(String username) {
         return concursanteDao.findByUsername(username);
     }
 

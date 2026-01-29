@@ -107,7 +107,7 @@
                 android:textColorHint="@color/text_hint" />
 
             <ImageView
-                android:id="@+id/ivTogglePassword"
+                android:id="@+id/ivVisibilidadPassword"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"

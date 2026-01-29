@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData;
 import com.example.granzonamarciana.dao.EspectadorDao;
 import com.example.granzonamarciana.database.DatabaseHelper;
 import com.example.granzonamarciana.entity.Espectador;
+
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -33,5 +35,9 @@ public class EspectadorService {
 
     public LiveData<Espectador> buscarEspectadorPorUsername(String username) {
         return espectadorDao.findByUsername(username);
+    }
+
+    public LiveData<List<Espectador>> obtenerTodos() {
+        return espectadorDao.findAll(); // Asegúrate de tener findAll() en el DAO
     }
 }

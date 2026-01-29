@@ -64,4 +64,33 @@ public class PuntuacionService {
     public LiveData<List<Puntuacion>> obtenerHistorialEspectador(int espectadorId) {
         return puntuacionDao.findByEspectador(espectadorId);
     }
+
+    // Obtener Historial del concursante
+    public androidx.lifecycle.LiveData<java.util.List<Puntuacion>> obtenerHistorialConcursante(int concursanteId) {
+        return puntuacionDao.findByConcursante(concursanteId); // Este metodo ya esta en el DAO
+    }
+
+    // Metodo para votar
+    public void votar(Puntuacion puntuacion, Runnable onSuccess, java.util.function.Consumer<String> onError) {
+        executor.execute(() -> {
+            // 1. Comprobar si ya existe voto
+            Puntuacion existe = puntuacionDao.findVotoExistente(
+                    puntuacion.getGalaId(),
+                    puntuacion.getEspectadorId(),
+                    puntuacion.getConcursanteId()
+            );
+
+            if (existe != null) {
+                // Ya votó -> Error
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
+                        onError.accept("Ya has votado a este concursante en esta gala.")
+                );
+            } else {
+                // 2. Insertar
+                puntuacionDao.insert(puntuacion);
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(onSuccess);
+            }
+        });
+    }
+
 }

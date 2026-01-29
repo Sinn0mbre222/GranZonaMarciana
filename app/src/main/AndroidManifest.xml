@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -13,9 +15,6 @@
         android:theme="@style/Theme.GranZonaMarciana">
 
         <activity
-            android:name=".activity.MenuAdminActivity"
-            android:exported="false" />
-        <activity
             android:name=".activity.LoginActivity"
             android:exported="true">
             <intent-filter>
@@ -23,17 +22,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activity.MainMenuActivity"
-            android:exported="true" />
 
-        <activity
-            android:name=".activity.MenuConcursanteActivity"
-            android:exported="false" />
+        <activity android:name=".activity.MainMenuActivity" android:exported="true" />
+        <activity android:name=".activity.MenuAdminActivity" android:exported="false" />
+        <activity android:name=".activity.MenuConcursanteActivity" android:exported="false" />
+        <activity android:name=".activity.MenuEspectadorActivity" android:exported="false" />
 
-        <activity
-            android:name=".activity.MenuEspectadorActivity"
-            android:exported="false" />
+        <activity android:name=".activity.NewsListActivity" android:exported="false" />
+        <activity android:name=".activity.NewsDetailActivity" android:exported="false" />
+        <activity android:name=".activity.CreateEditNewsActivity" android:exported="false" />
+
+        <activity android:name=".activity.EditionListActivity" android:exported="false" />
+        <activity android:name=".activity.CreateEditionActivity" android:exported="false" />
+
     </application>
 
 </manifest>

@@ -32,4 +32,5 @@ public interface PuntuacionDao {
     // Historial para Concursante (sus votos recibidos)
     @Query("SELECT * FROM puntuaciones WHERE concursanteId = :concursanteId")
     LiveData<List<Puntuacion>> findByConcursante(int concursanteId);
+
 }

@@ -11,18 +11,26 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GranZonaMarciana">
+
         <activity
             android:name=".activity.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".activity.MainMenuActivity"
             android:exported="true" />
+
+        <activity android:name=".activity.ParticipantsListActivity" android:exported="true"/>
+        <activity android:name=".activity.ParticipantPublicActivity" android:exported="true"/>
+        <activity android:name=".activity.RateParticipantActivity" android:exported="true"/>
+
+        <activity android:name=".activity.GalaScoresActivity" android:exported="true"/>
+        <activity android:name=".activity.RatingHistoryActivity" android:exported="true"/>
+
     </application>
 
 </manifest>

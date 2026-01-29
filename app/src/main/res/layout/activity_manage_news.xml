@@ -1,0 +1,20 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0B0E14"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/btnAddNews"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="+ NUEVA NOTICIA"
+        android:backgroundTint="#00838F"/>
+
+    <ListView
+        android:id="@+id/lvManageNews"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp"/>
+</LinearLayout>

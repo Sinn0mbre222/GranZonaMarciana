@@ -1,0 +1,48 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0B0E14"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NUEVA EDICIÓN"
+        android:textColor="#00FF41"
+        android:textSize="20sp"
+        android:layout_marginBottom="20dp"/>
+
+    <EditText
+        android:id="@+id/etStartDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Fecha Inicio (DD/MM/YYYY)"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#666666"/>
+
+    <EditText
+        android:id="@+id/etEndDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Fecha Fin (DD/MM/YYYY)"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#666666"/>
+
+    <EditText
+        android:id="@+id/etMaxParticipants"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Máximo de Participantes"
+        android:inputType="number"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#666666"/>
+
+    <Button
+        android:id="@+id/btnCreateEdition"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CONFIRMAR EDICIÓN"
+        android:layout_marginTop="30dp"
+        android:backgroundTint="#FF5722"/>
+</LinearLayout>

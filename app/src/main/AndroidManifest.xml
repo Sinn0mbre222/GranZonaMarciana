@@ -13,6 +13,9 @@
         android:theme="@style/Theme.GranZonaMarciana">
 
         <activity
+            android:name=".activity.MenuAdminActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.LoginActivity"
             android:exported="true">
             <intent-filter>
@@ -24,13 +27,13 @@
             android:name=".activity.MainMenuActivity"
             android:exported="true" />
 
-        <activity android:name=".activity.ParticipantsListActivity" android:exported="true"/>
-        <activity android:name=".activity.ParticipantPublicActivity" android:exported="true"/>
-        <activity android:name=".activity.RateParticipantActivity" android:exported="true"/>
+        <activity
+            android:name=".activity.MenuConcursanteActivity"
+            android:exported="false" />
 
-        <activity android:name=".activity.GalaScoresActivity" android:exported="true"/>
-        <activity android:name=".activity.RatingHistoryActivity" android:exported="true"/>
-
+        <activity
+            android:name=".activity.MenuEspectadorActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -20,7 +20,7 @@ public class ConcursanteService {
         this.executor = Executors.newSingleThreadExecutor();
     }
 
-    public void insertar(Concursante concursante) {
+    public void insert(Concursante concursante) {
         executor.execute(() -> concursanteDao.insert(concursante));
     }
 

@@ -1,55 +1,24 @@
 package com.example.granzonamarciana.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import com.example.granzonamarciana.R;
 import com.example.granzonamarciana.entity.Gala;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GalaAdapter extends RecyclerView.Adapter<GalaAdapter.GalaViewHolder> {
-
+public class GalaAdapter extends BaseAdapter {
+    private Context context;
     private List<Gala> galas = new ArrayList<>();
-    private final OnGalaClickListener listener;
-    // Formateador para que la fecha se vea bonita (ej: 25/10/2026)
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd 'de' MMMM, yyyy");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public interface OnGalaClickListener {
-        void onGalaClick(Gala gala);
-    }
-
-    public GalaAdapter(OnGalaClickListener listener) {
-        this.listener = listener;
-    }
-
-    @NonNull
-    @Override
-    public GalaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_gala, parent, false);
-        return new GalaViewHolder(itemView);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull GalaViewHolder holder, int position) {
-        Gala actual = galas.get(position);
-
-        holder.tvGalaName.setText("Gala #" + (position + 1));
-        if (actual.getFecha() != null) {
-            holder.tvGalaDate.setText(actual.getFecha().format(formatter));
-        }
-
-        holder.itemView.setOnClickListener(v -> listener.onGalaClick(actual));
-    }
-
-    @Override
-    public int getItemCount() {
-        return galas.size();
+    public GalaAdapter(Context context) {
+        this.context = context;
     }
 
     public void setGalas(List<Gala> galas) {
@@ -57,14 +26,28 @@ public class GalaAdapter extends RecyclerView.Adapter<GalaAdapter.GalaViewHolder
         notifyDataSetChanged();
     }
 
-    class GalaViewHolder extends RecyclerView.ViewHolder {
-        private final TextView tvGalaName;
-        private final TextView tvGalaDate;
+    @Override
+    public int getCount() { return galas.size(); }
 
-        public GalaViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvGalaName = itemView.findViewById(R.id.tvGalaName);
-            tvGalaDate = itemView.findViewById(R.id.tvGalaDate);
+    @Override
+    public Object getItem(int position) { return galas.get(position); }
+
+    @Override
+    public long getItemId(int position) { return position; }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_gala, parent, false);
         }
+
+        Gala actual = galas.get(position);
+        TextView tvName = convertView.findViewById(R.id.tvGalaName);
+        TextView tvDate = convertView.findViewById(R.id.tvGalaDate);
+
+        tvName.setText("Gala #" + (position + 1));
+        tvDate.setText(actual.getFecha().format(formatter));
+
+        return convertView;
     }
 }

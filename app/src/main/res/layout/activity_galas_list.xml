@@ -30,10 +30,12 @@
             android:contentDescription="Añadir Gala" />
     </RelativeLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvGalas"
+    <ListView
+        android:id="@+id/lvGalas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="8dp"
         android:padding="8dp"
         android:clipToPadding="false" />
 

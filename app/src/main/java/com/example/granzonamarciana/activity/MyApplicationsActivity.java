@@ -2,53 +2,41 @@ package com.example.granzonamarciana.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
+import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import com.example.granzonamarciana.R;
 import com.example.granzonamarciana.adapter.SolicitudAdapter;
 import com.example.granzonamarciana.entity.Solicitud;
 import com.example.granzonamarciana.service.SolicitudService;
 
-import java.util.List;
-
-public class MyApplicationsActivity extends AppCompatActivity implements SolicitudAdapter.OnSolicitudClickListener {
+public class MyApplicationsActivity extends AppCompatActivity {
 
     private SolicitudService solicitudService;
     private SolicitudAdapter adapter;
-    private int currentUserId = 2; // ID temporal hasta que Persona D pase el usuario logueado
+    private int currentUserId = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_applications);
 
-        // 1. Inicializar el Service
         solicitudService = new SolicitudService(getApplication());
 
-        // 2. Configurar el RecyclerView
-        RecyclerView rv = findViewById(R.id.rvApplications);
-        rv.setLayoutManager(new LinearLayoutManager(this));
-
+        ListView listView = findViewById(R.id.lvApplications);
         adapter = new SolicitudAdapter(this);
-        rv.setAdapter(adapter);
+        listView.setAdapter(adapter);
 
-        // 3. Observar los datos de la BD
-        // El LiveData permite que la lista se actualice sola si algo cambia
-        solicitudService.getMisSolicitudes(currentUserId).observe(this, solicitudes -> {
-            if (solicitudes != null) {
-                adapter.setSolicitudes(solicitudes);
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            Solicitud seleccionada = (Solicitud) adapter.getItem(position);
+            Intent intent = new Intent(this, ApplicationDetailActivity.class);
+            intent.putExtra("SOLICITUD_ID", seleccionada.getId());
+            startActivity(intent);
+        });
+
+        solicitudService.getMisSolicitudes(currentUserId).observe(this, lista -> {
+            if (lista != null) {
+                adapter.setSolicitudes(lista);
             }
         });
-    }
-
-    @Override
-    public void onSolicitudClick(Solicitud solicitud) {
-        // Al pulsar, vamos al detalle de la solicitud
-        Intent intent = new Intent(this, ApplicationDetailActivity.class);
-        intent.putExtra("SOLICITUD_ID", solicitud.getId()); // Pasamos el ID para cargar los datos
-        startActivity(intent);
     }
 }

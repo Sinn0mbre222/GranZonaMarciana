@@ -1,63 +1,22 @@
 package com.example.granzonamarciana.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import com.example.granzonamarciana.R;
 import com.example.granzonamarciana.entity.Solicitud;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.SolicitudViewHolder> {
-
+public class SolicitudAdapter extends BaseAdapter {
+    private Context context;
     private List<Solicitud> solicitudes = new ArrayList<>();
-    private final OnSolicitudClickListener listener;
 
-    public interface OnSolicitudClickListener {
-        void onSolicitudClick(Solicitud solicitud);
-    }
-
-    public SolicitudAdapter(OnSolicitudClickListener listener) {
-        this.listener = listener;
-    }
-
-    @NonNull
-    @Override
-    public SolicitudViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_solicitud, parent, false);
-        return new SolicitudViewHolder(itemView);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull SolicitudViewHolder holder, int position) {
-        Solicitud actual = solicitudes.get(position);
-
-        holder.tvEditionLabel.setText("Edición #" + actual.getEditionId());
-        holder.tvMessagePreview.setText(actual.getMensaje());
-        holder.tvStatus.setText(actual.getEstado().toString());
-
-        switch (actual.getEstado()) {
-            case ACEPTADA:
-                holder.tvStatus.setTextColor(holder.itemView.getContext().getColor(android.R.color.holo_green_light));
-                break;
-            case RECHAZADA:
-                holder.tvStatus.setTextColor(holder.itemView.getContext().getColor(android.R.color.holo_red_light));
-                break;
-            default:
-                holder.tvStatus.setTextColor(holder.itemView.getContext().getColor(R.color.text_secondary));
-                break;
-        }
-
-        holder.itemView.setOnClickListener(v -> listener.onSolicitudClick(actual));
-    }
-
-    @Override
-    public int getItemCount() {
-        return solicitudes.size();
+    public SolicitudAdapter(Context context) {
+        this.context = context;
     }
 
     public void setSolicitudes(List<Solicitud> solicitudes) {
@@ -65,16 +24,38 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.Soli
         notifyDataSetChanged();
     }
 
-    class SolicitudViewHolder extends RecyclerView.ViewHolder {
-        private final TextView tvEditionLabel;
-        private final TextView tvMessagePreview;
-        private final TextView tvStatus;
+    @Override
+    public int getCount() { return solicitudes.size(); }
 
-        public SolicitudViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvEditionLabel = itemView.findViewById(R.id.tvEditionLabel);
-            tvMessagePreview = itemView.findViewById(R.id.tvMessagePreview);
-            tvStatus = itemView.findViewById(R.id.tvStatus);
+    @Override
+    public Object getItem(int position) { return solicitudes.get(position); }
+
+    @Override
+    public long getItemId(int position) { return position; }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_solicitud, parent, false);
         }
+
+        Solicitud actual = solicitudes.get(position);
+
+        TextView tvEdition = convertView.findViewById(R.id.tvEditionLabel);
+        TextView tvMsg = convertView.findViewById(R.id.tvMessagePreview);
+        TextView tvStatus = convertView.findViewById(R.id.tvStatus);
+
+        tvEdition.setText("Edición #" + actual.getEditionId());
+        tvMsg.setText(actual.getMensaje());
+        tvStatus.setText(actual.getEstado().toString());
+
+        // Colores según estado
+        switch (actual.getEstado()) {
+            case ACEPTADA: tvStatus.setTextColor(context.getColor(android.R.color.holo_green_light)); break;
+            case RECHAZADA: tvStatus.setTextColor(context.getColor(android.R.color.holo_red_light)); break;
+            default: tvStatus.setTextColor(context.getColor(R.color.text_secondary)); break;
+        }
+
+        return convertView;
     }
 }

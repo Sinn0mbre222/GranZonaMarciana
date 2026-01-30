@@ -3,17 +3,15 @@ package com.example.granzonamarciana.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.granzonamarciana.R;
 
 public class MenuConcursanteActivity extends AppCompatActivity {
 
-    private Button btnLogout;
+    private Button btnLogout, btnMyProfile, btnApplyEdition, btnMyApplications,
+            btnMyEditions, btnMyGalas, btnViewNews;
     private TextView tvWelcomeConcursante;
 
     @Override
@@ -21,29 +19,34 @@ public class MenuConcursanteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contestant_menu);
 
-        // Inicializar vistas
-        btnLogout = findViewById(R.id.btnLogout);
         tvWelcomeConcursante = findViewById(R.id.tvWelcomeConcursante);
+        btnMyProfile = findViewById(R.id.btnMyProfile);
+        btnApplyEdition = findViewById(R.id.btnApplyEdition);
+        btnMyApplications = findViewById(R.id.btnMyApplications);
+        btnMyEditions = findViewById(R.id.btnMyEditions);
+        btnMyGalas = findViewById(R.id.btnMyGalas);
+        btnViewNews = findViewById(R.id.btnViewNews);
+        btnLogout = findViewById(R.id.btnLogout);
 
-        // Recuperar datos de sesión
         SharedPreferences sharedPreferences = getSharedPreferences("granZMUser", MODE_PRIVATE);
         String username = sharedPreferences.getString("username", "Concursante");
-
-        // Mostrar mensaje de bienvenida
         tvWelcomeConcursante.setText("¡Buena suerte, " + username + "!");
 
-        btnLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getSharedPreferences("granZMUser", MODE_PRIVATE)
-                        .edit()
-                        .clear()
-                        .apply();
+        // Navegación
+        btnMyProfile.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
+        btnApplyEdition.setOnClickListener(v -> startActivity(new Intent(this, ApplyEditionActivity.class)));
+        btnMyApplications.setOnClickListener(v -> startActivity(new Intent(this, MyApplicationsActivity.class)));
+        btnMyEditions.setOnClickListener(v -> startActivity(new Intent(this, EditionListActivity.class)));
+        btnMyGalas.setOnClickListener(v -> startActivity(new Intent(this, GalasListActivity.class)));
+        btnViewNews.setOnClickListener(v -> startActivity(new Intent(this, NewsListActivity.class)));
 
-                Intent intent = new Intent(MenuConcursanteActivity.this, LoginActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
+        btnLogout.setOnClickListener(v -> cerrarSesion());
+    }
+
+    private void cerrarSesion() {
+        getSharedPreferences("granZMUser", MODE_PRIVATE).edit().clear().apply();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

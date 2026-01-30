@@ -42,7 +42,7 @@ public class LoginActivity extends AppCompatActivity {
         //Comprobar sesión y poblar BD
         comprobarSiEstaLogueado();
 
-        populateBD();
+        //populateBD();
 
         //Inicializar Servicios
         administradorService = new AdministradorService(this);
@@ -65,8 +65,8 @@ public class LoginActivity extends AppCompatActivity {
         tvInvitado.setOnClickListener(v -> accederComoInvitado());
 
         btnCrearUsuario.setOnClickListener(v -> {
-            // Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(LoginActivity.this, RegistroActivity.class);
+            startActivity(intent);
         });
     }
 
@@ -135,7 +135,6 @@ public class LoginActivity extends AppCompatActivity {
 
 
     private void accederComoInvitado() {
-        // Guardamos datos ficticios para el invitado
         SharedPreferences.Editor editor = getSharedPreferences("granZMUser", MODE_PRIVATE).edit();
         editor.putInt("id", -1); // ID especial para invitados
         editor.putString("username", "Invitado");

@@ -13,21 +13,28 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GranZonaMarciana">
-        <activity
-            android:name=".activity.RegistroActivity"
-            android:exported="false" />
+
         <activity
             android:name=".activity.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activity.RegistroActivity"
+            android:exported="false" />
+
         <activity
             android:name=".activity.MainMenuActivity"
             android:exported="true" />
+
+        <activity
+            android:name=".activity.ProfileActivity"
+            android:exported="false" />
+
         <activity
             android:name=".activity.MenuAdminActivity"
             android:exported="false" />
@@ -37,6 +44,7 @@
         <activity
             android:name=".activity.MenuEspectadorActivity"
             android:exported="false" />
+
         <activity
             android:name=".activity.NewsListActivity"
             android:exported="false" />
@@ -46,12 +54,52 @@
         <activity
             android:name=".activity.CreateEditNewsActivity"
             android:exported="false" />
+
         <activity
             android:name=".activity.EditionListActivity"
             android:exported="false" />
         <activity
             android:name=".activity.CreateEditionActivity"
             android:exported="false" />
+        <activity
+            android:name=".activity.ApplyEditionActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.GalasListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.CreateGalaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.GalaScoresActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.RateParticipantActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.RatingHistoryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.ParticipantsListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.ParticipantPublicActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.ManageApplicationsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.ApplicationReviewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.MyApplicationsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.ManageUsersActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

@@ -14,7 +14,7 @@ import com.example.granzonamarciana.R;
 
 public class MainMenuActivity extends AppCompatActivity {
 
-    private Button btnLogout;
+    private Button btnProfile, btnEditions, btnNews, btnGalas, btnParticipants, btnLogout;
     private TextView tvWelcome;
 
     @Override
@@ -22,26 +22,56 @@ public class MainMenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        btnLogout = findViewById(R.id.btnLogout);
         tvWelcome = findViewById(R.id.tvWelcome);
+        btnProfile = findViewById(R.id.btnProfile);
+        btnEditions = findViewById(R.id.btnEditions);
+        btnNews = findViewById(R.id.btnNews);
+        btnGalas = findViewById(R.id.btnGalas);
+        btnParticipants = findViewById(R.id.btnParticipants);
+        btnLogout = findViewById(R.id.btnLogout);
 
         SharedPreferences sharedPreferences = getSharedPreferences("granZMUser", MODE_PRIVATE);
-        String nombreUsuario = sharedPreferences.getString("username", "Usuario");
+        String nombreUsuario = sharedPreferences.getString("username", "Invitado");
+        int userId = sharedPreferences.getInt("id", -1); // Si no hay ID, asumimos -1 (Invitado)
 
         tvWelcome.setText("Bienvenido/a, " + nombreUsuario);
 
-        btnLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getSharedPreferences("granZMUser", MODE_PRIVATE)
-                        .edit()
-                        .clear()
-                        .apply();
 
-                Intent intent = new Intent(MainMenuActivity.this, LoginActivity.class);
+        btnProfile.setOnClickListener(v -> {
+            if (userId == -1) {
+                Toast.makeText(MainMenuActivity.this, "Función no disponible para invitados. Regístrate para acceder.", Toast.LENGTH_LONG).show();
+            } else {
+                Intent intent = new Intent(MainMenuActivity.this, ProfileActivity.class);
                 startActivity(intent);
-                finish();
             }
+        });
+
+        btnEditions.setOnClickListener(v -> {
+            Intent intent = new Intent(MainMenuActivity.this, EditionListActivity.class);
+            startActivity(intent);
+        });
+
+        btnNews.setOnClickListener(v -> {
+            Intent intent = new Intent(MainMenuActivity.this, NewsListActivity.class);
+            startActivity(intent);
+        });
+
+        btnGalas.setOnClickListener(v -> {
+            Intent intent = new Intent(MainMenuActivity.this, GalasListActivity.class);
+            startActivity(intent);
+        });
+
+        btnParticipants.setOnClickListener(v -> {
+            Intent intent = new Intent(MainMenuActivity.this, ParticipantsListActivity.class);
+            startActivity(intent);
+        });
+
+        btnLogout.setOnClickListener(v -> {
+            sharedPreferences.edit().clear().apply();
+
+            Intent intent = new Intent(MainMenuActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
         });
     }
 }

@@ -7,15 +7,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.granzonamarciana.R;
 import com.example.granzonamarciana.database.PopulateBD;
-import com.example.granzonamarciana.entity.Administrador;
-import com.example.granzonamarciana.entity.Concursante;
-import com.example.granzonamarciana.entity.Espectador;
 import com.example.granzonamarciana.entity.TipoRol;
 import com.example.granzonamarciana.service.AdministradorService;
 import com.example.granzonamarciana.service.ConcursanteService;
@@ -29,73 +27,58 @@ public class LoginActivity extends AppCompatActivity {
     private EspectadorService espectadorService;
     private ConcursanteService concursanteService;
 
-    //Declarar los campos
     private EditText etUsername, etPassword;
-
-    //Imagen para ocultar contraseña
     private ImageView ivVisibilidadPassword;
-
-    //Contraseña visible o no visible
-    private boolean passwordVisible = false;
-
     private Button btnLogin, btnCrearUsuario;
+    private TextView tvInvitado; // Campo para el acceso de invitado
+
+    private boolean passwordVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        comprobarSiEstaLogueado();
-        popularteBD();
 
+        //Comprobar sesión y poblar BD
+        comprobarSiEstaLogueado();
+
+        populateBD();
+
+        //Inicializar Servicios
         administradorService = new AdministradorService(this);
         espectadorService = new EspectadorService(this);
         concursanteService = new ConcursanteService(this);
 
+        // Inicializar Vistas
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         ivVisibilidadPassword = findViewById(R.id.ivVisibilidadPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnCrearUsuario = findViewById(R.id.btnCrearUsuario);
+        tvInvitado = findViewById(R.id.tvInvitado);
 
-        //Pulsar en el icono del ojo de la contraseña
-        ivVisibilidadPassword.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cambiarVisibilidadContraseña();
-            }
-        });
+        // Listeners
+        ivVisibilidadPassword.setOnClickListener(v -> cambiarVisibilidadContraseña());
 
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                iniciarSesion();
-            }
-        });
+        btnLogin.setOnClickListener(v -> iniciarSesion());
 
-        btnCrearUsuario.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Ir a RegisterActivity
-                //Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-                //startActivity(intent);
-            }
+        tvInvitado.setOnClickListener(v -> accederComoInvitado());
+
+        btnCrearUsuario.setOnClickListener(v -> {
+            // Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            // startActivity(intent);
         });
     }
 
-    //Metodo para cambiar la visibilidad de la contraseña
     private void cambiarVisibilidadContraseña() {
-        //Si está visible, se oculta, si no, se muestra la contraseña
         if (passwordVisible) {
-            // Ocultar contraseña
-            etPassword.setInputType(129);
+            etPassword.setInputType(129); // textPassword
             ivVisibilidadPassword.setImageResource(R.drawable.ic_visibility_off);
         } else {
-            // Mostrar contraseña
-            etPassword.setInputType(144);
+            etPassword.setInputType(144); // textVisiblePassword
             ivVisibilidadPassword.setImageResource(R.drawable.ic_visibility);
         }
         passwordVisible = !passwordVisible;
-        // Mover cursor al final
         etPassword.setSelection(etPassword.getText().length());
     }
 
@@ -103,12 +86,17 @@ public class LoginActivity extends AppCompatActivity {
         String username = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
-        if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
+        if (username.isEmpty()) {
+            etUsername.setError("Ingresa el usuario");
+            return;
+        }
+        if (password.isEmpty()) {
+            etPassword.setError("Ingresa la contraseña");
             return;
         }
 
-        // Empezamos la cadena de búsqueda
+        Toast.makeText(this, "Verificando credenciales...", Toast.LENGTH_SHORT).show();
+        // Iniciar cadena de búsqueda: Admin -> Concursante -> Espectador
         intentarLoginAdmin(username, password);
     }
 
@@ -118,7 +106,6 @@ public class LoginActivity extends AppCompatActivity {
                 guardarUsuarioLogueado(admin.getId(), admin.getUsername(), TipoRol.ADMINISTRADOR);
                 redirigirSegunRol();
             } else {
-                // Si no es admin, probamos con Concursante
                 intentarLoginConcursante(username, password);
             }
         });
@@ -130,7 +117,6 @@ public class LoginActivity extends AppCompatActivity {
                 guardarUsuarioLogueado(concu.getId(), concu.getUsername(), TipoRol.CONCURSANTE);
                 redirigirSegunRol();
             } else {
-                // Si no es concursante, probamos con Espectador
                 intentarLoginEspectador(username, password);
             }
         });
@@ -142,10 +128,22 @@ public class LoginActivity extends AppCompatActivity {
                 guardarUsuarioLogueado(espec.getId(), espec.getUsername(), TipoRol.ESPECTADOR);
                 redirigirSegunRol();
             } else {
-                // Si llegamos aquí y no se ha encontrado en ninguna tabla
-                Toast.makeText(this, "Credenciales incorrectas en todos los roles", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+
+    private void accederComoInvitado() {
+        // Guardamos datos ficticios para el invitado
+        SharedPreferences.Editor editor = getSharedPreferences("granZMUser", MODE_PRIVATE).edit();
+        editor.putInt("id", -1); // ID especial para invitados
+        editor.putString("username", "Invitado");
+        editor.putString("rol", "INVITADO");
+        editor.apply();
+
+        Toast.makeText(this, "Accediendo como invitado espacial", Toast.LENGTH_SHORT).show();
+        redirigirSegunRol();
     }
 
     private void guardarUsuarioLogueado(int id, String username, TipoRol rol) {
@@ -181,14 +179,15 @@ public class LoginActivity extends AppCompatActivity {
                 intent = new Intent(this, MenuEspectadorActivity.class);
                 break;
             default:
+                // El caso "INVITADO" cae aquí por defecto
                 intent = new Intent(this, MainMenuActivity.class);
         }
 
         startActivity(intent);
-        finish(); // Cerrar LoginActivity
+        finish();
     }
 
-    private void popularteBD() {
+    private void populateBD() {
         PopulateBD populateBD = new PopulateBD(this);
         populateBD.deleteBD(this);
         populateBD.populateAdministrador();

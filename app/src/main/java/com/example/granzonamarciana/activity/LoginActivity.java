@@ -3,7 +3,6 @@ package com.example.granzonamarciana.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -65,7 +64,7 @@ public class LoginActivity extends AppCompatActivity {
         tvInvitado.setOnClickListener(v -> accederComoInvitado());
 
         btnCrearUsuario.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, RegistroActivity.class);
+            Intent intent = new Intent(LoginActivity.this, RegistroSelectionActivity.class);
             startActivity(intent);
         });
     }
@@ -189,8 +188,7 @@ public class LoginActivity extends AppCompatActivity {
     private void populateBD() {
         PopulateBD populateBD = new PopulateBD(this);
         populateBD.deleteBD(this);
-        populateBD.populateAdministrador();
-        populateBD.populateConcursante();
-        populateBD.populateEspectador();
+        populateBD.executeFullPopulate();
+
     }
 }

@@ -1,19 +1,18 @@
 package com.example.granzonamarciana.entity;
 
 import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 @Entity(tableName = "solicitudes")
 public class Solicitud extends DomainEntity {
-
-    private int editionId;    // ID de la edición
-    private int contestantId; // ID del concursante
-    private String mensaje;   // Motivo por el que desea participar
+    private int editionId;
+    private int concursanteId;
+    private String mensaje;
     private EstadoSolicitud estado;
 
-    public Solicitud(int editionId, int contestantId, String mensaje, EstadoSolicitud estado) {
+    // El constructor no debe incluir el ID si DomainEntity lo autogenera
+    public Solicitud(int editionId, int concursanteId, String mensaje, EstadoSolicitud estado) {
         this.editionId = editionId;
-        this.contestantId = contestantId;
+        this.concursanteId = concursanteId;
         this.mensaje = mensaje;
         this.estado = estado;
     }
@@ -22,8 +21,8 @@ public class Solicitud extends DomainEntity {
     public int getEditionId() { return editionId; }
     public void setEditionId(int editionId) { this.editionId = editionId; }
 
-    public int getContestantId() { return contestantId; }
-    public void setContestantId(int contestantId) { this.contestantId = contestantId; }
+    public int getConcursanteId() { return concursanteId; }
+    public void setConcursanteId(int concursanteId) { this.concursanteId = concursanteId; }
 
     public String getMensaje() { return mensaje; }
     public void setMensaje(String mensaje) { this.mensaje = mensaje; }

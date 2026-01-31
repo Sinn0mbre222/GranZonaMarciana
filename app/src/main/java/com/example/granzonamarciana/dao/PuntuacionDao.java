@@ -4,7 +4,11 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Transaction;
+
 import com.example.granzonamarciana.entity.Puntuacion;
+import com.example.granzonamarciana.entity.pojo.PuntuacionConConcursante;
+
 import java.util.List;
 
 @Dao
@@ -32,5 +36,8 @@ public interface PuntuacionDao {
     // Historial para Concursante (sus votos recibidos)
     @Query("SELECT * FROM puntuaciones WHERE concursanteId = :concursanteId")
     LiveData<List<Puntuacion>> findByConcursante(int concursanteId);
+    @Transaction
+    @Query("SELECT * FROM puntuaciones WHERE galaId = :galaId")
+    LiveData<List<PuntuacionConConcursante>> getVotosConConcursanteByGala(int galaId);
 
 }

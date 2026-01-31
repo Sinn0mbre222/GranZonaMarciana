@@ -35,7 +35,11 @@ public class MenuEspectadorActivity extends AppCompatActivity {
 
         // Navegación
         btnMyProfile.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
-        btnRateParticipants.setOnClickListener(v -> startActivity(new Intent(this, RateParticipantActivity.class)));
+        btnRateParticipants.setOnClickListener(v -> {
+            // En lugar de ir directo a votar (que daría error), vamos a la lista para elegir a quién
+            Intent intent = new Intent(this, ParticipantsListActivity.class);
+            startActivity(intent);
+        });
         btnAvailableRatings.setOnClickListener(v -> startActivity(new Intent(this, GalasListActivity.class)));
         btnMyRatings.setOnClickListener(v -> startActivity(new Intent(this, RatingHistoryActivity.class)));
         btnViewEditions.setOnClickListener(v -> startActivity(new Intent(this, EditionListActivity.class)));

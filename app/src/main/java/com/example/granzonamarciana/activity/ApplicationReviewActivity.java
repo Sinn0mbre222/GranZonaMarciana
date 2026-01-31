@@ -60,7 +60,7 @@ public class ApplicationReviewActivity extends AppCompatActivity {
             for (Solicitud s : solicitudes) {
                 if (s.getId() == id) {
                     solicitudActual = s;
-                    tvApplicantName.setText("Aspirante ID: " + s.getContestantId());
+                    tvApplicantName.setText("Aspirante ID: " + s.getConcursanteId());
                     tvMotivationDetail.setText(s.getMensaje());
                     break;
                 }

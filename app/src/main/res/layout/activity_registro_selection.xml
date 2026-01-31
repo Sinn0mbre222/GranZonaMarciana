@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    android:background="@color/background_dark">
+
+    <ImageView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/ic_granzonamarciana"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="¿Cómo quieres unirte?"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Elige tu bando en la Zona Marciana"
+        android:textColor="@color/text_secondary"
+        android:layout_marginBottom="40dp"
+        android:gravity="center"/>
+
+    <Button
+        android:id="@+id/btnSelectionEspectador"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Registrarse como Espectador"
+        android:textAllCaps="false"
+        android:backgroundTint="@color/button_menu_bg"
+        android:textColor="@color/white"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnSelectionConcursante"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Registrarse como Concursante"
+        android:textAllCaps="false"
+        android:backgroundTint="@color/button_register_bg"
+        android:textColor="@color/white"
+        android:layout_marginBottom="32dp" />
+
+    <TextView
+        android:id="@+id/tvBackFromSelection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="← Volver atrás"
+        android:textColor="@color/text_secondary"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true" />
+
+</LinearLayout>

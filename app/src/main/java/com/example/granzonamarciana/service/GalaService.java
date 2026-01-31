@@ -1,6 +1,8 @@
 package com.example.granzonamarciana.service;
 
 import android.app.Application;
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import com.example.granzonamarciana.database.DatabaseHelper;
 import com.example.granzonamarciana.dao.GalaDao;
@@ -16,8 +18,8 @@ public class GalaService {
     private final GalaDao galaDao;
     private final ExecutorService executorService;
 
-    public GalaService(Application application) {
-        DatabaseHelper db = DatabaseHelper.getInstance(application);
+    public GalaService(Context context) {
+        DatabaseHelper db = DatabaseHelper.getInstance(context);
         galaDao = db.galaDao();
         this.executorService = Executors.newFixedThreadPool(4);
     }

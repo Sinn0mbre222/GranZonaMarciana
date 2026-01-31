@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -11,7 +12,6 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Foto de perfil -->
         <ImageView
             android:id="@+id/ivProfile"
             android:layout_width="120dp"
@@ -22,7 +22,6 @@
             android:scaleType="centerCrop"
             android:padding="4dp" />
 
-        <!-- Información del usuario -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,7 +31,6 @@
             android:textColor="@color/white"
             android:layout_marginBottom="16dp"/>
 
-        <!-- Username (NO EDITABLE, poner después en la activity) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -137,7 +135,6 @@
             android:hint="URL de imagen de perfil"
             android:inputType="textUri" />
 
-        <!-- Rol y Fecha de registro (NO EDITABLES) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -158,8 +155,8 @@
                     android:layout_height="wrap_content"
                     android:text="Rol:"
                     android:textColor="@color/text_secondary"
-                    android:textSize="16sp"
-                    android:layout_marginEnd="12dp"/>
+                    android:textSize="14sp"
+                    android:layout_marginEnd="4dp"/>
 
                 <TextView
                     android:id="@+id/tvUserRole"
@@ -167,7 +164,8 @@
                     android:layout_height="wrap_content"
                     android:text="Espectador"
                     android:textColor="@color/white"
-                    android:textSize="16sp"/>
+                    android:textSize="14sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
 
             <LinearLayout
@@ -181,10 +179,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Registrado:"
+                    android:text="Unido:"
                     android:textColor="@color/text_secondary"
-                    android:textSize="16sp"
-                    android:layout_marginEnd="12dp"/>
+                    android:textSize="14sp"
+                    android:layout_marginEnd="4dp"/>
 
                 <TextView
                     android:id="@+id/tvJoinDate"
@@ -192,82 +190,58 @@
                     android:layout_height="wrap_content"
                     android:text="2024-01-15"
                     android:textColor="@color/white"
-                    android:textSize="16sp"/>
+                    android:textSize="14sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/llEditButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="32dp"
-            android:visibility="gone">
+            android:orientation="vertical"
+            android:layout_marginTop="24dp">
 
             <Button
-                android:id="@+id/btnSave"
-                android:layout_width="0dp"
+                android:id="@+id/btnGuardar"
+                android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="Guardar"
+                android:layout_marginBottom="12dp"
+                android:text="Guardar Cambios"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
+                android:textStyle="bold"
                 android:backgroundTint="@color/button_login_bg" />
 
             <Button
-                android:id="@+id/btnCancelEdit"
-                android:layout_width="0dp"
+                android:id="@+id/btnCambiarPass"
+                android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:text="Cancelar"
+                android:layout_marginBottom="12dp"
+                android:text="Cambiar Contraseña"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:backgroundTint="@color/button_register_bg" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/llViewButtons"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="32dp">
-
-            <Button
-                android:id="@+id/btnEdit"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="Editar Perfil"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/button_login_bg" />
 
             <Button
                 android:id="@+id/btnBack"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_marginBottom="12dp"
                 android:text="Volver"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
-                android:backgroundTint="@color/button_register_bg" />
+                android:backgroundTint="#424242" />
+
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Eliminar Usuario"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/button_delete_bg"
+                android:visibility="gone" />
+
         </LinearLayout>
-
-        <!-- Botón eliminar (solo admin, poner después en activity) -->
-        <Button
-            android:id="@+id/btnDelete"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="16dp"
-            android:text="Eliminar Usuario"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/button_delete_bg"
-            android:visibility="gone" />
-
     </LinearLayout>
 </ScrollView>

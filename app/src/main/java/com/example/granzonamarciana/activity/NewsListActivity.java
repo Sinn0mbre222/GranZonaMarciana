@@ -2,7 +2,9 @@ package com.example.granzonamarciana.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -34,6 +36,14 @@ public class NewsListActivity extends AppCompatActivity {
             Intent i = new Intent(this, NewsDetailActivity.class);
             i.putExtra("ID", n.getId());
             startActivity(i);
+        });
+
+        TextView tvBack = findViewById(R.id.tvBack); // Usa el ID que tengas en tu XML
+        tvBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
         });
     }
 }

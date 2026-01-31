@@ -1,11 +1,15 @@
 package com.example.granzonamarciana.service;
 
 import android.app.Application;
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import com.example.granzonamarciana.database.DatabaseHelper;
 import com.example.granzonamarciana.dao.SolicitudDao;
 import com.example.granzonamarciana.entity.Solicitud;
 import com.example.granzonamarciana.entity.EstadoSolicitud;
+import com.example.granzonamarciana.entity.pojo.SolicitudConConcursante;
+
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,8 +19,8 @@ public class SolicitudService {
     private final SolicitudDao solicitudDao;
     private final ExecutorService executorService;
 
-    public SolicitudService(Application application) {
-        DatabaseHelper db = DatabaseHelper.getInstance(application);
+    public SolicitudService(Context context) {
+        DatabaseHelper db = DatabaseHelper.getInstance(context);
         solicitudDao = db.solicitudDao();
         executorService = Executors.newSingleThreadExecutor();
     }
@@ -58,5 +62,9 @@ public class SolicitudService {
             solicitud.setEstado(EstadoSolicitud.RECHAZADA);
             solicitudDao.update(solicitud);
         });
+    }
+
+    public LiveData<List<SolicitudConConcursante>> obtenerAceptadosPorEdicion(int editionId) {
+        return solicitudDao.getParticipantesAceptados(editionId);
     }
 }

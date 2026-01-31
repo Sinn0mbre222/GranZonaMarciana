@@ -6,6 +6,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,8 +15,7 @@ import com.example.granzonamarciana.R;
 import com.example.granzonamarciana.adapter.GalaScoreAdapter;
 import com.example.granzonamarciana.entity.Concursante;
 import com.example.granzonamarciana.entity.Gala;
-import com.example.granzonamarciana.entity.Puntuacion;
-import com.example.granzonamarciana.service.ConcursanteService;
+import com.example.granzonamarciana.entity.pojo.PuntuacionConConcursante;
 import com.example.granzonamarciana.service.GalaService;
 import com.example.granzonamarciana.service.PuntuacionService;
 
@@ -29,120 +29,122 @@ public class GalaScoresActivity extends AppCompatActivity {
 
     private Spinner spinnerGalas;
     private ListView lvRanking;
-
     private GalaService galaService;
     private PuntuacionService puntuacionService;
-    private ConcursanteService concursanteService;
-
-    private List<Gala> listaGalas; // Para mapear posición del spinner a objeto Gala
+    private List<Gala> listaGalas;
+    private TextView tvBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gala_scores);
 
-        // Init Vistas
-        spinnerGalas = findViewById(R.id.spinnerGalaResults);
-        lvRanking = findViewById(R.id.lvGalaScores);
+        // 1. Inicializar Vistas
+        initViews();
 
-        // Init Servicios
+        // 2. Inicializar Servicios
         galaService = new GalaService(getApplication());
         puntuacionService = new PuntuacionService(this);
-        concursanteService = new ConcursanteService(this);
 
-        // Cargar Galas (Aquí simplificamos cargando TODAS, lo ideal sería filtrar por edición activa)
-        // Como tu GalaService pide ID de edición obligatoriamente,
-        // asumimos Edición 1 para probar o habría que pedir al usuario qué edición ver.
-        // TRUCO: Pasamos 1 por defecto. Si quieres mejorarlo, añade un spinner de edición antes.
-        cargarGalas(1);
+        // 3. Obtener ID de edición del Intent (por defecto 1)
+        int editionId = getIntent().getIntExtra("EDITION_ID", 1);
+
+        // 4. Configurar botón volver
+        tvBack = findViewById(R.id.tvBack);
+        tvBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        // 5. Cargar datos iniciales
+        cargarGalas(editionId);
+    }
+
+    private void initViews() {
+        spinnerGalas = findViewById(R.id.spinnerGalaResults);
+        lvRanking = findViewById(R.id.lvGalaScores);
     }
 
     private void cargarGalas(int editionId) {
         galaService.getGalasByEdicion(editionId).observe(this, galas -> {
             if (galas != null && !galas.isEmpty()) {
-                listaGalas = galas;
-                List<String> nombres = new ArrayList<>();
+                this.listaGalas = galas;
+                List<String> nombresGalas = new ArrayList<>();
+
                 for (Gala g : galas) {
-                    nombres.add("Gala " + g.getId() + " - " + g.getFecha());
+                    nombresGalas.add("Gala " + g.getId() + " (" + g.getFecha() + ")");
                 }
 
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, nombres);
+                // Usamos el layout personalizado para que el texto sea blanco
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_rol_item, nombresGalas);
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinnerGalas.setAdapter(adapter);
 
                 spinnerGalas.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        cargarRanking(listaGalas.get(position).getId());
+                        int galaId = listaGalas.get(position).getId();
+                        actualizarRanking(galaId);
                     }
+
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {}
                 });
             } else {
-                Toast.makeText(this, "No hay galas en esta edición", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "No hay galas registradas para esta edición.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void cargarRanking(int galaId) {
-        // 1. Obtener todas las puntuaciones de esa gala
-        puntuacionService.obtenerPuntuacionesGala(galaId).observe(this, puntuaciones -> {
-            if (puntuaciones != null) {
-                calcularRanking(puntuaciones);
-            }
-        });
-    }
+    private void actualizarRanking(int galaId) {
+        // Obtenemos los votos usando el POJO que une Puntuación con Concursante
+        puntuacionService.obtenerResultadosGala(galaId).observe(this, votos -> {
+            if (votos != null && !votos.isEmpty()) {
 
-    private void calcularRanking(List<Puntuacion> puntuaciones) {
-        // Mapa auxiliar: ID Concursante -> Lista de notas
-        Map<Integer, List<Integer>> notasPorConcursante = new HashMap<>();
+                // Mapas para procesar los datos en una sola pasada
+                Map<Integer, Double> sumaNotas = new HashMap<>();
+                Map<Integer, Integer> contadorVotos = new HashMap<>();
+                Map<Integer, Concursante> concursantesMap = new HashMap<>();
 
-        for (Puntuacion p : puntuaciones) {
-            if (!notasPorConcursante.containsKey(p.getConcursanteId())) {
-                notasPorConcursante.put(p.getConcursanteId(), new ArrayList<>());
-            }
-            notasPorConcursante.get(p.getConcursanteId()).add(p.getValor());
-        }
+                for (PuntuacionConConcursante item : votos) {
+                    int id = item.concursante.getId();
 
-        // Mapa de Medias: ID Concursante -> Media
-        Map<Integer, Double> medias = new HashMap<>();
-        List<Integer> idsConcursantes = new ArrayList<>();
+                    // Guardamos el objeto concursante
+                    concursantesMap.put(id, item.concursante);
 
-        for (Map.Entry<Integer, List<Integer>> entry : notasPorConcursante.entrySet()) {
-            double suma = 0;
-            for (int nota : entry.getValue()) suma += nota;
-            double media = suma / entry.getValue().size();
+                    // Acumulamos la puntuación
+                    sumaNotas.put(id, sumaNotas.getOrDefault(id, 0.0) + item.puntuacion.getValor());
 
-            medias.put(entry.getKey(), media);
-            idsConcursantes.add(entry.getKey());
-        }
-
-        // Ahora necesitamos los objetos Concursante (Nombres) para mostrarlos
-        // Esto es un poco complejo con LiveData en bucle, así que usamos un truco:
-        // Pedimos TODOS los concursantes y filtramos en memoria.
-        concursanteService.obtenerTodos().observe(this, todosLosConcursantes -> {
-            List<Concursante> ranking = new ArrayList<>();
-            for (Concursante c : todosLosConcursantes) {
-                if (medias.containsKey(c.getId())) {
-                    ranking.add(c);
+                    // Contamos el voto
+                    contadorVotos.put(id, contadorVotos.getOrDefault(id, 0) + 1);
                 }
+
+                // Calculamos las medias finales y preparamos la lista para el Ranking
+                List<Concursante> ranking = new ArrayList<>(concursantesMap.values());
+                Map<Integer, Double> mediasFinales = new HashMap<>();
+
+                for (Concursante c : ranking) {
+                    int id = c.getId();
+                    double media = sumaNotas.get(id) / contadorVotos.get(id);
+                    mediasFinales.put(id, media);
+                }
+
+                // Ordenar la lista de mayor a menor puntuación media
+                Collections.sort(ranking, (c1, c2) ->
+                        mediasFinales.get(c2.getId()).compareTo(mediasFinales.get(c1.getId()))
+                );
+
+                // Enviamos los datos al Adapter
+                GalaScoreAdapter adapter = new GalaScoreAdapter(this, R.layout.item_gala_score, ranking, mediasFinales);
+                lvRanking.setAdapter(adapter);
+
+            } else {
+                // Si no hay votos, limpiamos la lista
+                lvRanking.setAdapter(null);
+                Toast.makeText(this, "Aún no hay puntuaciones en esta gala.", Toast.LENGTH_SHORT).show();
             }
-
-            // Ordenar por nota (Mayor a menor)
-            Collections.sort(ranking, (c1, c2) -> {
-                Double media1 = medias.get(c1.getId());
-                Double media2 = medias.get(c2.getId());
-                return media2.compareTo(media1); // Descendente
-            });
-
-            // Mostrar en lista
-            GalaScoreAdapter adapter = new GalaScoreAdapter(
-                    this,
-                    R.layout.item_gala_score,
-                    ranking,
-                    medias
-            );
-            lvRanking.setAdapter(adapter);
         });
     }
 }

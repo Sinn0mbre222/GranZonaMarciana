@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -9,8 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp"
-        android:paddingBottom="10dp">
+        android:padding="24dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -24,49 +24,69 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Conoce a los concursantes"
+            android:text="Filtra por edición o busca por nombre"
             android:textSize="14sp"
-            android:textColor="@color/white"
+            android:textColor="@color/text_secondary"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="20dp"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Filtrar por Edición:"
-            android:textColor="@color/white"
-            android:layout_marginBottom="8dp"/>
-
-        <Spinner
-            android:id="@+id/spinnerEdiciones"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:background="@drawable/edittext_background"
-            android:padding="10dp"
-            android:layout_marginBottom="12dp"/>
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="12dp">
+            <Spinner
+                android:id="@+id/spinnerEdiciones"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null" />
+        </LinearLayout>
 
-        <EditText
-            android:id="@+id/etBuscarParticipante"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:background="@drawable/edittext_background"
-            android:hint="Buscar por nombre..."
-            android:textColor="@color/white"
-            android:textColorHint="@color/text_hint"
-            android:padding="16dp"
-            android:inputType="text"/>
-
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_search"
+                app:tint="@color/icon_tint" />
+            <EditText
+                android:id="@+id/etBuscarParticipante"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="12dp"
+                android:background="@null"
+                android:hint="Buscar concursante..."
+                android:textColor="@color/white"
+                android:textColorHint="@color/text_hint"
+                android:inputType="text" />
+        </LinearLayout>
     </LinearLayout>
 
     <ListView
         android:id="@+id/lvParticipantes"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:divider="@color/white"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="#333333"
         android:dividerHeight="1dp"
-        xmlns:tools="http://schemas.android.com/tools"
-        tools:listitem="@layout/item_participant" />
+        android:paddingHorizontal="16dp" />
 
+    <TextView
+        android:id="@+id/tvBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:padding="16dp"
+        android:text="← Volver atrás"
+        android:textColor="@color/text_secondary"
+        android:clickable="true"
+        android:focusable="true" />
 </LinearLayout>

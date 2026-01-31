@@ -4,8 +4,11 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Transaction;
 import androidx.room.Update;
 import com.example.granzonamarciana.entity.Concursante;
+import com.example.granzonamarciana.entity.pojo.ConcursanteConPuntuaciones;
+
 import java.util.List;
 
 @Dao
@@ -23,10 +26,13 @@ public interface ConcursanteDao {
     @Query("SELECT * FROM concursantes WHERE username = :username")
     LiveData<Concursante> findByUsername(String username);
 
-    // Consulta importante: Obtener concursantes ACEPTADOS de una edición específica
-    @Query("SELECT * FROM concursantes WHERE id IN (SELECT contestantId FROM solicitudes WHERE editionId = :editionId AND estado = 'ACEPTADA')")
-    LiveData<List<Concursante>> findByEditionId(int editionId);
 
     @Query("SELECT * FROM concursantes")
     LiveData<List<Concursante>> findAll();
+    // Consulta importante: Obtener concursantes ACEPTADOS de una edición específica
+    @Query("SELECT * FROM concursantes WHERE id IN (SELECT concursanteId FROM solicitudes WHERE editionId = :editionId AND estado = 'ACEPTADA')")
+    LiveData<List<Concursante>> findByEditionId(int editionId);
+    @Transaction
+    @Query("SELECT * FROM concursantes WHERE id IN (SELECT concursanteId FROM puntuaciones WHERE galaId = :galaId)")
+    LiveData<List<ConcursanteConPuntuaciones>> getRankingGala(int galaId);
 }

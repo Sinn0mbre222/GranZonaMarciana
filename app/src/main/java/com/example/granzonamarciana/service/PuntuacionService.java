@@ -7,6 +7,8 @@ import com.example.granzonamarciana.dao.PuntuacionDao;
 import com.example.granzonamarciana.database.DatabaseHelper;
 import com.example.granzonamarciana.entity.Gala;
 import com.example.granzonamarciana.entity.Puntuacion;
+import com.example.granzonamarciana.entity.pojo.PuntuacionConConcursante;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -91,6 +93,10 @@ public class PuntuacionService {
                 new android.os.Handler(android.os.Looper.getMainLooper()).post(onSuccess);
             }
         });
+    }
+
+    public LiveData<List<PuntuacionConConcursante>> obtenerResultadosGala(int galaId) {
+        return puntuacionDao.getVotosConConcursanteByGala(galaId);
     }
 
 }

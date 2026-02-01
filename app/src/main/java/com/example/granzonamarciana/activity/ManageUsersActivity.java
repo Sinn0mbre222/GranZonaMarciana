@@ -20,6 +20,7 @@ import com.example.granzonamarciana.adapter.UserAdapter;
 import com.example.granzonamarciana.entity.Concursante;
 import com.example.granzonamarciana.entity.DomainEntity;
 import com.example.granzonamarciana.entity.Espectador;
+import com.example.granzonamarciana.entity.TipoRol;
 import com.example.granzonamarciana.service.ConcursanteService;
 import com.example.granzonamarciana.service.EspectadorService;
 
@@ -51,14 +52,11 @@ public class ManageUsersActivity extends AppCompatActivity {
         // Cargar usuarios
         cargarTodosLosUsuarios();
 
-        // Botón Añadir (Va al registro genérico)
+        // Botón Añadir (Pendiente de que creen RegistroActivity tus compañeros)
         btnAddUser.setOnClickListener(v -> {
-            // ESTO ESTÁ PENDIENTE HASTA QUE CREEN EL ARCHIVO:
             // Intent intent = new Intent(ManageUsersActivity.this, RegistroActivity.class);
             // startActivity(intent);
-
-            // De momento mostramos un aviso para que no falle:
-            Toast.makeText(ManageUsersActivity.this, "Falta crear la pantalla de Registro", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ManageUsersActivity.this, "RegistroActivity aún no creada", Toast.LENGTH_SHORT).show();
         });
 
         // Buscador
@@ -71,6 +69,28 @@ public class ManageUsersActivity extends AppCompatActivity {
             }
             @Override
             public void afterTextChanged(Editable s) {}
+        });
+
+        // --- NUEVO: Click en la lista para ver detalle (READ ONLY) ---
+        lvUsers.setOnItemClickListener((parent, view, position, id) -> {
+            DomainEntity usuarioSeleccionado = adapter.getItem(position);
+
+            if (usuarioSeleccionado != null) {
+                Intent intent = new Intent(ManageUsersActivity.this, ProfileActivity.class);
+
+                // Pasamos ID y activamos modo lectura
+                intent.putExtra("TARGET_USER_ID", usuarioSeleccionado.getId());
+                intent.putExtra("READ_ONLY", true);
+
+                // Pasamos el Rol correcto
+                if (usuarioSeleccionado instanceof Concursante) {
+                    intent.putExtra("TARGET_USER_ROLE", TipoRol.CONCURSANTE.toString());
+                } else {
+                    intent.putExtra("TARGET_USER_ROLE", TipoRol.ESPECTADOR.toString());
+                }
+
+                startActivity(intent);
+            }
         });
     }
 
@@ -109,14 +129,17 @@ public class ManageUsersActivity extends AppCompatActivity {
         // 1. Cargar Espectadores
         espectadorService.obtenerTodos().observe(this, espectadores -> {
             if (espectadores != null) {
+                // Limpiamos previos de espectadores para no duplicar si se llama varias veces
+                allUsers.removeIf(u -> u instanceof Espectador);
                 allUsers.addAll(espectadores);
                 actualizarLista();
             }
         });
 
-        // 2. Cargar Concursantes (Asumiendo que tienes obtenerTodos en ConcursanteService, si no, usa el de obtenerPorEdicion o crea uno)
+        // 2. Cargar Concursantes
         concursanteService.obtenerTodos().observe(this, concursantes -> {
             if (concursantes != null) {
+                allUsers.removeIf(u -> u instanceof Concursante);
                 allUsers.addAll(concursantes);
                 actualizarLista();
             }
@@ -124,7 +147,6 @@ public class ManageUsersActivity extends AppCompatActivity {
     }
 
     private void actualizarLista() {
-        // Refresca la lista con lo que haya en allUsers aplicando el filtro actual
         filtrar(etSearch.getText().toString(), spinnerRoleFilter.getSelectedItemPosition());
     }
 
@@ -136,14 +158,17 @@ public class ManageUsersActivity extends AppCompatActivity {
             boolean cumpleNombre = false;
             boolean cumpleRol = false;
 
-            // Chequeo de nombre
+            String nombre = "";
             if (u instanceof Espectador) {
-                cumpleNombre = ((Espectador) u).getNombre().toLowerCase().contains(busqueda);
+                nombre = ((Espectador) u).getNombre();
             } else if (u instanceof Concursante) {
-                cumpleNombre = ((Concursante) u).getNombre().toLowerCase().contains(busqueda);
+                nombre = ((Concursante) u).getNombre();
             }
 
-            // Chequeo de Rol (0=Todos, 1=Espectador, 2=Concursante)
+            if (nombre != null && nombre.toLowerCase().contains(busqueda)) {
+                cumpleNombre = true;
+            }
+
             if (rolPos == 0) cumpleRol = true;
             else if (rolPos == 1 && u instanceof Espectador) cumpleRol = true;
             else if (rolPos == 2 && u instanceof Concursante) cumpleRol = true;

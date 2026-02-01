@@ -14,7 +14,7 @@ public class EdicionConGalas {
 
     @Relation(
             parentColumn = "id",
-            entityColumn = "edicionId" // Debe existir este campo en la entidad Gala
+            entityColumn = "editionId" // Debe existir este campo en la entidad Gala
     )
     public List<Gala> galas;
 }

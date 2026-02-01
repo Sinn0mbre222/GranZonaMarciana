@@ -4,9 +4,12 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Transaction;
 
 import com.example.granzonamarciana.entity.Administrador;
 import com.example.granzonamarciana.entity.Edicion;
+import com.example.granzonamarciana.entity.pojo.EdicionConGalas;
+import com.example.granzonamarciana.entity.pojo.EdicionConNoticias;
 
 import java.util.List;
 
@@ -21,5 +24,12 @@ public interface EdicionDAO {
     @Query("SELECT * FROM ediciones")
     LiveData<List<Edicion>> findALl();
 
+    @Transaction // Necesario porque Room hace dos consultas internamente
+    @Query("SELECT * FROM ediciones")
+    LiveData<List<EdicionConNoticias>> getEdicionesConNoticias();
+
+    @Transaction
+    @Query("SELECT * FROM ediciones WHERE id = :edicionId")
+    LiveData<EdicionConGalas> getEdicionConGalas(int edicionId);
 
 }

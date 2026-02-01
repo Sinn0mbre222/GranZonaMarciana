@@ -12,11 +12,14 @@ public class Noticia extends DomainEntity{
     private String  cabecera;
     private String imagen;
 
-    public Noticia(LocalDate fechaPublicacion, String cuerpo, String cabecera, String imagen) {
+    private int edicionId;
+
+    public Noticia(LocalDate fechaPublicacion, String cuerpo, String cabecera, String imagen, int edicionId) {
         this.fechaPublicacion = fechaPublicacion;
         this.cuerpo = cuerpo;
         this.cabecera = cabecera;
         this.imagen = imagen;
+        this.edicionId=edicionId;
     }
 
     public LocalDate getFechaPublicacion() {
@@ -35,10 +38,17 @@ public class Noticia extends DomainEntity{
         return cuerpo;
     }
 
+    public int getEdicionId() {
+        return edicionId;
+    }
+
     public void setFechaPublicacion(LocalDate fechaPublicacion) {
         this.fechaPublicacion = fechaPublicacion;
     }
 
+    public void setEdicionId(int edicionId) {
+        this.edicionId = edicionId;
+    }
     public void setCuerpo(String cuerpo) {
         this.cuerpo = cuerpo;
     }

@@ -5,53 +5,35 @@ import androidx.lifecycle.LiveData;
 import com.example.granzonamarciana.dao.GalaDao;
 import com.example.granzonamarciana.dao.PuntuacionDao;
 import com.example.granzonamarciana.database.DatabaseHelper;
-import com.example.granzonamarciana.entity.Gala;
 import com.example.granzonamarciana.entity.Puntuacion;
 import com.example.granzonamarciana.entity.pojo.PuntuacionConConcursante;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class PuntuacionService {
 
     private final PuntuacionDao puntuacionDao;
-    private final GalaDao galaDao; // Necesitamos ver la fecha de la gala
-    private final ExecutorService executor;
+    private final GalaDao galaDao;
 
     public PuntuacionService(Context context) {
         DatabaseHelper db = DatabaseHelper.getInstance(context);
         this.puntuacionDao = db.puntuacionDao();
         this.galaDao = db.galaDao();
-        this.executor = Executors.newSingleThreadExecutor();
     }
 
-    public interface VotoCallback {
-        void onExito();
-        void onError(String mensaje);
+
+    public LiveData<Boolean> haVotado(int galaId, int espectadorId, int concursanteId) {
+        return puntuacionDao.haVotado(galaId, espectadorId, concursanteId);
     }
-
-    // Metodo principal para votar con validaciones
-    public void votar(Puntuacion puntuacion, VotoCallback callback) {
-        executor.execute(() -> {
-            // 1. Validar duplicados
-            Puntuacion existente = puntuacionDao.findVotoExistente(
-                    puntuacion.getGalaId(),
-                    puntuacion.getEspectadorId(),
-                    puntuacion.getConcursanteId()
-            );
-
-            if (existente != null) {
-                callback.onError("Ya has votado a este concursante en esta gala.");
-                return;
+    public void puntuar(final Puntuacion p) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Room detectará automáticamente si intentas insertar un duplicado
+                // gracias a la Primary Key compuesta que pusimos en la Entidad.
+                puntuacionDao.insert(p);
             }
-
-            // 2. Insertar voto (La validación de fecha la haremos en la Activity antes de llamar aquí para poder mostrar la fecha al usuario,
-            // pero podríamos añadirla aquí también si tenemos la Gala a mano).
-            puntuacionDao.insert(puntuacion);
-            callback.onExito();
-        });
+        }).start();
     }
 
     public LiveData<List<Puntuacion>> obtenerPuntuacionesGala(int galaId) {
@@ -62,41 +44,15 @@ public class PuntuacionService {
         return puntuacionDao.getMediaPuntuacion(galaId, concursanteId);
     }
 
-    // Para el historial del espectador
     public LiveData<List<Puntuacion>> obtenerHistorialEspectador(int espectadorId) {
         return puntuacionDao.findByEspectador(espectadorId);
     }
 
-    // Obtener Historial del concursante
-    public androidx.lifecycle.LiveData<java.util.List<Puntuacion>> obtenerHistorialConcursante(int concursanteId) {
-        return puntuacionDao.findByConcursante(concursanteId); // Este metodo ya esta en el DAO
-    }
-
-    // Metodo para votar
-    public void votar(Puntuacion puntuacion, Runnable onSuccess, java.util.function.Consumer<String> onError) {
-        executor.execute(() -> {
-            // 1. Comprobar si ya existe voto
-            Puntuacion existe = puntuacionDao.findVotoExistente(
-                    puntuacion.getGalaId(),
-                    puntuacion.getEspectadorId(),
-                    puntuacion.getConcursanteId()
-            );
-
-            if (existe != null) {
-                // Ya votó -> Error
-                new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
-                        onError.accept("Ya has votado a este concursante en esta gala.")
-                );
-            } else {
-                // 2. Insertar
-                puntuacionDao.insert(puntuacion);
-                new android.os.Handler(android.os.Looper.getMainLooper()).post(onSuccess);
-            }
-        });
+    public LiveData<List<Puntuacion>> obtenerHistorialConcursante(int concursanteId) {
+        return puntuacionDao.findByConcursante(concursanteId);
     }
 
     public LiveData<List<PuntuacionConConcursante>> obtenerResultadosGala(int galaId) {
         return puntuacionDao.getVotosConConcursanteByGala(galaId);
     }
-
 }

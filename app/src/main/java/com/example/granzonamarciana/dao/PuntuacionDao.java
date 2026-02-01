@@ -3,6 +3,7 @@ package com.example.granzonamarciana.dao;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
 
@@ -14,7 +15,7 @@ import java.util.List;
 @Dao
 public interface PuntuacionDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(Puntuacion puntuacion);
 
     // Para comprobar si ya ha votado
@@ -39,5 +40,10 @@ public interface PuntuacionDao {
     @Transaction
     @Query("SELECT * FROM puntuaciones WHERE galaId = :galaId")
     LiveData<List<PuntuacionConConcursante>> getVotosConConcursanteByGala(int galaId);
+
+    @Query("SELECT EXISTS(SELECT * FROM puntuaciones WHERE galaId = :galaId AND espectadorId = :espectadorId AND concursanteId = :concursanteId)")
+    LiveData<Boolean> haVotado(int galaId, int espectadorId, int concursanteId);
+
+
 
 }

@@ -38,7 +38,7 @@ public class MenuAdminActivity extends AppCompatActivity {
         // Navegación
         btnManageUsers.setOnClickListener(v -> startActivity(new Intent(this, ManageUsersActivity.class)));
         btnManageNews.setOnClickListener(v -> startActivity(new Intent(this, NewsListActivity.class)));
-        btnManageEditions.setOnClickListener(v -> startActivity(new Intent(this, EditionListActivity.class)));
+        btnManageEditions.setOnClickListener(v -> startActivity(new Intent(this, CreateEditionActivity.class)));
         btnManageApplications.setOnClickListener(v -> startActivity(new Intent(this, ManageApplicationsActivity.class)));
         btnManageGalas.setOnClickListener(v -> startActivity(new Intent(this, GalasListActivity.class)));
 

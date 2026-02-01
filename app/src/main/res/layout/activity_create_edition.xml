@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,23 +12,31 @@
         android:text="NUEVA EDICIÓN"
         android:textColor="#00FF41"
         android:textSize="20sp"
-        android:layout_marginBottom="20dp"/>
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp"
+        android:layout_gravity="center_horizontal"/>
 
     <EditText
         android:id="@+id/etStartDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Fecha Inicio (DD/MM/YYYY)"
+        android:hint="Fecha Inicio"
         android:textColor="#FFFFFF"
-        android:textColorHint="#666666"/>
+        android:textColorHint="#666666"
+        android:focusable="false"
+        android:clickable="true"
+        android:layout_marginBottom="10dp"/>
 
     <EditText
         android:id="@+id/etEndDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Fecha Fin (DD/MM/YYYY)"
+        android:hint="Fecha Fin"
         android:textColor="#FFFFFF"
-        android:textColorHint="#666666"/>
+        android:textColorHint="#666666"
+        android:focusable="false"
+        android:clickable="true"
+        android:layout_marginBottom="10dp"/>
 
     <EditText
         android:id="@+id/etMaxParticipants"
@@ -36,13 +45,27 @@
         android:hint="Máximo de Participantes"
         android:inputType="number"
         android:textColor="#FFFFFF"
-        android:textColorHint="#666666"/>
+        android:textColorHint="#666666"
+        android:layout_marginBottom="20dp"/>
 
     <Button
         android:id="@+id/btnCreateEdition"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:text="CONFIRMAR EDICIÓN"
-        android:layout_marginTop="30dp"
-        android:backgroundTint="#FF5722"/>
+        android:backgroundTint="#FF5722"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tvBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:padding="16dp"
+        android:layout_marginTop="10dp"
+        android:text="← Volver atrás"
+        android:textColor="#999999"
+        android:clickable="true"
+        android:focusable="true" />
+
 </LinearLayout>

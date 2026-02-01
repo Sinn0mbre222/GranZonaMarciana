@@ -1,6 +1,5 @@
 package com.example.granzonamarciana.activity;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -34,6 +33,7 @@ public class RateParticipantActivity extends AppCompatActivity {
     private PuntuacionService puntuacionService;
 
     private int concursanteId;
+    private int espectadorId;
     private String concursanteNombre, concursanteFoto;
     private List<Gala> listaGalasActivas;
 
@@ -42,12 +42,23 @@ public class RateParticipantActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rate_participant);
 
-        // 1. Recibir datos del Intent
+        // 1. Recuperar datos del Intent
         concursanteId = getIntent().getIntExtra("CONCURSANTE_ID", -1);
         concursanteNombre = getIntent().getStringExtra("CONCURSANTE_NOMBRE");
         concursanteFoto = getIntent().getStringExtra("CONCURSANTE_FOTO");
 
         if (concursanteId == -1) {
+            Toast.makeText(this, "Error: Concursante no identificado", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // 2. Recuperar sesión (SharedPrefs granZMUser)
+        SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
+        espectadorId = prefs.getInt("id", -1);
+
+        if (espectadorId == -1) {
+            Toast.makeText(this, "Debe iniciar sesión para votar", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -55,20 +66,30 @@ public class RateParticipantActivity extends AppCompatActivity {
         initViews();
         initServices();
 
-        // 2. Cargar UI inicial
-        tvNombre.setText(concursanteNombre != null ? concursanteNombre : "Concursante");
+        tvNombre.setText(concursanteNombre != null ? concursanteNombre : "Participante");
         cargarImagenConcursante();
-
-        // 3. Cargar galas disponibles
         cargarGalasActivas();
 
-        // Listener del RatingBar
+        // Listener del Spinner para comprobar duplicados al cambiar de gala
+        spinnerGalas.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (listaGalasActivas != null && !listaGalasActivas.isEmpty()) {
+                    Gala seleccionada = listaGalasActivas.get(position);
+                    vincularObservadorVoto(seleccionada.getId());
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
         ratingBar.setOnRatingBarChangeListener((rb, rating, fromUser) ->
                 tvRatingValue.setText("Puntuación: " + (int)rating + "/5")
         );
 
         btnEnviar.setOnClickListener(v -> enviarVoto());
-        //findViewById(R.id.btnBackRate).setOnClickListener(v -> finish());
+
+
     }
 
     private void initViews() {
@@ -88,8 +109,7 @@ public class RateParticipantActivity extends AppCompatActivity {
 
     private void cargarImagenConcursante() {
         if (concursanteFoto != null && concursanteFoto.startsWith("http")) {
-            Picasso.get()
-                    .load(concursanteFoto)
+            Picasso.get().load(concursanteFoto)
                     .placeholder(R.drawable.ic_default_avatar)
                     .error(R.drawable.ic_default_avatar)
                     .into(ivFoto);
@@ -98,8 +118,20 @@ public class RateParticipantActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Lógica de "Favorito": Observa si ya existe el voto en la BD.
+     * Si el LiveData detecta el voto, informa y cierra la actividad.
+     */
+    private void vincularObservadorVoto(int galaId) {
+        puntuacionService.haVotado(galaId, espectadorId, concursanteId).observe(this, yaVotado -> {
+            if (yaVotado != null && yaVotado) {
+                Toast.makeText(this, "Ya has valorado a este participante en esta gala", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+    }
+
     private void cargarGalasActivas() {
-        // Buscamos en qué edición está el concursante para traer sus galas
         solicitudService.getMisSolicitudes(concursanteId).observe(this, solicitudes -> {
             if (solicitudes != null) {
                 for (Solicitud s : solicitudes) {
@@ -108,7 +140,6 @@ public class RateParticipantActivity extends AppCompatActivity {
                         return;
                     }
                 }
-                Toast.makeText(this, "Concursante no activo.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -121,27 +152,21 @@ public class RateParticipantActivity extends AppCompatActivity {
 
             if (galas != null) {
                 for (Gala g : galas) {
-                    LocalDate fechaGala = g.getFecha();
-                    // Validación de 24h posteriores (Hoy o Ayer)
-                    if (fechaGala.isEqual(hoy) || fechaGala.isEqual(hoy.minusDays(1))) {
+                    LocalDate fGala = g.getFecha();
+                    // Requisito PDF: 24h posteriores (Hoy o Ayer)
+                    if (fGala.isEqual(hoy) || fGala.isEqual(hoy.minusDays(1))) {
                         listaGalasActivas.add(g);
-                        nombresGalas.add("Gala " + g.getId() + " (" + fechaGala + ")");
+                        nombresGalas.add("Gala " + g.getId() + " (" + fGala + ")");
                     }
                 }
             }
 
             if (listaGalasActivas.isEmpty()) {
-                Toast.makeText(this, "No hay galas abiertas hoy", Toast.LENGTH_LONG).show();
                 btnEnviar.setEnabled(false);
-                nombresGalas.add("Cerrado: No hay galas hoy");
-            } else {
-                btnEnviar.setEnabled(true);
+                nombresGalas.add("No hay galas disponibles");
             }
 
-            // Spinner con diseño para fondo oscuro
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                    this, R.layout.spinner_rol_item, nombresGalas
-            );
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_rol_item, nombresGalas);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerGalas.setAdapter(adapter);
         });
@@ -150,38 +175,27 @@ public class RateParticipantActivity extends AppCompatActivity {
     private void enviarVoto() {
         int rating = (int) ratingBar.getRating();
         if (rating < 1) {
-            Toast.makeText(this, "Mínimo 1 estrella", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // CORRECCIÓN: Usar las mismas SharedPreferences que en ProfileActivity
-        SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
-        int espectadorId = prefs.getInt("id", -1);
-
-        if (espectadorId == -1) {
-            Toast.makeText(this, "Error de sesión", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Selecciona al menos una estrella", Toast.LENGTH_SHORT).show();
             return;
         }
 
         int pos = spinnerGalas.getSelectedItemPosition();
-        if (pos >= 0 && pos < listaGalasActivas.size()) {
+        if (pos >= 0 && !listaGalasActivas.isEmpty()) {
             Gala gala = listaGalasActivas.get(pos);
 
+            // Crear entidad con clave compuesta (espectadorId, concursanteId, galaId)
             Puntuacion voto = new Puntuacion(
-                    gala.getId(),
                     espectadorId,
                     concursanteId,
+                    gala.getId(),
                     rating,
                     LocalDate.now()
             );
 
-            puntuacionService.votar(voto,
-                    () -> { // Éxito
-                        Toast.makeText(this, "¡Puntuación enviada!", Toast.LENGTH_SHORT).show();
-                        finish();
-                    },
-                    msg -> Toast.makeText(this, msg, Toast.LENGTH_LONG).show() // Error (ya votó)
-            );
+            // Inserción asíncrona mediante Thread puro (Service)
+            puntuacionService.puntuar(voto);
+
+            // Al insertar, el LiveData del observador detectará el cambio y cerrará la pantalla
         }
     }
 }

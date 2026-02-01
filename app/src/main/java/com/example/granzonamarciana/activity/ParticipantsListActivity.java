@@ -21,6 +21,7 @@ public class ParticipantsListActivity extends AppCompatActivity {
     private Spinner spinnerEdiciones;
     private ListView lvParticipantes;
     private EditText etBuscar;
+    private ImageButton btnBuscar;
     private EdicionService edicionService;
     private ConcursanteService concursanteService;
     private ParticipantAdapter adapter;
@@ -39,7 +40,12 @@ public class ParticipantsListActivity extends AppCompatActivity {
 
         cargarEdiciones();
 
-        // Configurar buscador en tiempo real
+        // 1. Configurar buscador por botón
+        btnBuscar.setOnClickListener(v -> {
+            filtrarListaLocal(etBuscar.getText().toString());
+        });
+
+        // 2. Mantener buscador en tiempo real (opcional, pero recomendado)
         etBuscar.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -51,7 +57,21 @@ public class ParticipantsListActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // Botón volver
+        // 3. CONFIGURAR CLICK EN LA LISTA PARA VALORAR
+        lvParticipantes.setOnItemClickListener((parent, view, position, id) -> {
+            Concursante seleccionado = (Concursante) parent.getItemAtPosition(position);
+
+            if (seleccionado != null) {
+                Intent intent = new Intent(this, RateParticipantActivity.class);
+                // PASAMOS LOS EXTRAS QUE NECESITA LA ACTIVITY DE VOTAR
+                intent.putExtra("CONCURSANTE_ID", seleccionado.getId());
+                intent.putExtra("CONCURSANTE_NOMBRE", seleccionado.getNombre() + " " + seleccionado.getPrimerApellido());
+                intent.putExtra("CONCURSANTE_FOTO", seleccionado.getImagenUrl());
+
+                startActivity(intent);
+            }
+        });
+
         findViewById(R.id.tvBack).setOnClickListener(v -> finish());
     }
 
@@ -59,6 +79,7 @@ public class ParticipantsListActivity extends AppCompatActivity {
         spinnerEdiciones = findViewById(R.id.spinnerEdiciones);
         lvParticipantes = findViewById(R.id.lvParticipantes);
         etBuscar = findViewById(R.id.etBuscarParticipante);
+        btnBuscar = findViewById(R.id.btnEjecutarBusqueda);
     }
 
     private void cargarEdiciones() {
@@ -70,7 +91,6 @@ public class ParticipantsListActivity extends AppCompatActivity {
                     labels.add("Edición " + e.getId() + " (" + e.getFechaInicio() + ")");
                 }
 
-                // USAR R.layout.spinner_rol_item para que el texto sea blanco
                 ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
                         this, R.layout.spinner_rol_item, labels
                 );
@@ -93,11 +113,8 @@ public class ParticipantsListActivity extends AppCompatActivity {
         concursanteService.obtenerPorEdicion(idEdicion).observe(this, concursantes -> {
             if (concursantes != null) {
                 listaConcursantesFull = new ArrayList<>(concursantes);
-                // Inicializar el adapter con la lista completa
                 adapter = new ParticipantAdapter(this, R.layout.item_participant, concursantes);
                 lvParticipantes.setAdapter(adapter);
-
-                // Si había algo escrito en el buscador, volver a filtrar
                 filtrarListaLocal(etBuscar.getText().toString());
             }
         });
@@ -119,7 +136,6 @@ public class ParticipantsListActivity extends AppCompatActivity {
                 }
             }
         }
-        // Método que debes tener en tu ParticipantAdapter para actualizar la lista
         adapter.updateData(filtrados);
     }
 }

@@ -39,4 +39,5 @@ public class Edicion extends DomainEntity{
     public void setFechaInicio(LocalDate fechaInicio) {
         this.fechaInicio = fechaInicio;
     }
+
 }

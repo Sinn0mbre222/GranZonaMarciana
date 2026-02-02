@@ -21,7 +21,6 @@ public class ParticipantsListActivity extends AppCompatActivity {
     private Spinner spinnerEdiciones;
     private ListView lvParticipantes;
     private EditText etBuscar;
-    private ImageButton btnBuscar;
     private EdicionService edicionService;
     private ConcursanteService concursanteService;
     private ParticipantAdapter adapter;
@@ -34,37 +33,25 @@ public class ParticipantsListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_participants_list);
 
         initViews();
-
         edicionService = new EdicionService(this);
         concursanteService = new ConcursanteService(this);
 
         cargarEdiciones();
 
-        // 1. Configurar buscador por botón
-        btnBuscar.setOnClickListener(v -> {
-            filtrarListaLocal(etBuscar.getText().toString());
-        });
-
-        // 2. Mantener buscador en tiempo real
+        // Buscador en tiempo real
         etBuscar.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 filtrarListaLocal(s.toString());
             }
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
 
-        // 3. CONFIGURAR CLICK EN LA LISTA -> IR A PERFIL PÚBLICO (CORREGIDO)
+        // Al pulsar: siempre al Perfil Público
         lvParticipantes.setOnItemClickListener((parent, view, position, id) -> {
-            // Obtenemos el objeto directamente del adapter (para respetar el filtrado)
-            Concursante seleccionado = (Concursante) parent.getItemAtPosition(position);
-
+            Concursante seleccionado = (Concursante) adapter.getItem(position);
             if (seleccionado != null) {
-                // CAMBIO IMPORTANTE: Vamos a ParticipantPublicActivity, NO a RateParticipantActivity
-                Intent intent = new Intent(ParticipantsListActivity.this, ParticipantPublicActivity.class);
+                Intent intent = new Intent(this, ParticipantPublicActivity.class);
                 intent.putExtra("CONCURSANTE_ID", seleccionado.getId());
                 startActivity(intent);
             }
@@ -77,7 +64,9 @@ public class ParticipantsListActivity extends AppCompatActivity {
         spinnerEdiciones = findViewById(R.id.spinnerEdiciones);
         lvParticipantes = findViewById(R.id.lvParticipantes);
         etBuscar = findViewById(R.id.etBuscarParticipante);
-        btnBuscar = findViewById(R.id.btnEjecutarBusqueda);
+        // Ocultamos el filtro de galas en este layout si existiera el ID
+        View galaLayout = findViewById(R.id.layoutFilterGala);
+        if (galaLayout != null) galaLayout.setVisibility(View.GONE);
     }
 
     private void cargarEdiciones() {
@@ -85,23 +74,18 @@ public class ParticipantsListActivity extends AppCompatActivity {
             if (ediciones != null && !ediciones.isEmpty()) {
                 listaEdiciones = ediciones;
                 List<String> labels = new ArrayList<>();
-                for (Edicion e : ediciones) {
-                    labels.add("Edición " + e.getId() + " (" + e.getFechaInicio() + ")");
-                }
+                for (Edicion e : ediciones) labels.add("Edición #" + e.getId());
 
-                ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
-                        this, R.layout.spinner_rol_item, labels
-                );
+                ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, R.layout.spinner_rol_item, labels);
                 spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinnerEdiciones.setAdapter(spinnerAdapter);
 
                 spinnerEdiciones.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        cargarParticipantes(listaEdiciones.get(position).getId());
+                    public void onItemSelected(AdapterView<?> p, View v, int pos, long id) {
+                        cargarParticipantes(listaEdiciones.get(pos).getId());
                     }
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {}
+                    @Override public void onNothingSelected(AdapterView<?> p) {}
                 });
             }
         });
@@ -111,7 +95,7 @@ public class ParticipantsListActivity extends AppCompatActivity {
         concursanteService.obtenerPorEdicion(idEdicion).observe(this, concursantes -> {
             if (concursantes != null) {
                 listaConcursantesFull = new ArrayList<>(concursantes);
-                adapter = new ParticipantAdapter(this, R.layout.item_participant, concursantes);
+                adapter = new ParticipantAdapter(this, R.layout.item_participant, listaConcursantesFull);
                 lvParticipantes.setAdapter(adapter);
                 filtrarListaLocal(etBuscar.getText().toString());
             }
@@ -120,18 +104,13 @@ public class ParticipantsListActivity extends AppCompatActivity {
 
     private void filtrarListaLocal(String texto) {
         if (adapter == null) return;
-
         List<Concursante> filtrados = new ArrayList<>();
         String busqueda = texto.toLowerCase().trim();
-
-        if (busqueda.isEmpty()) {
-            filtrados.addAll(listaConcursantesFull);
-        } else {
+        if (busqueda.isEmpty()) filtrados.addAll(listaConcursantesFull);
+        else {
             for (Concursante c : listaConcursantesFull) {
-                String nombreCompleto = (c.getNombre() + " " + c.getPrimerApellido()).toLowerCase();
-                if (nombreCompleto.contains(busqueda)) {
+                if ((c.getNombre() + " " + c.getPrimerApellido()).toLowerCase().contains(busqueda))
                     filtrados.add(c);
-                }
             }
         }
         adapter.updateData(filtrados);

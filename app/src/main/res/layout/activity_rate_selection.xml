@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Concursantes"
+            android:text="Votar Participantes"
             android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="@color/white"
@@ -24,11 +24,20 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Consulta las ediciones y sus participantes"
+            android:text="Selecciona edición y gala para puntuar"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="20dp"/>
+            android:layout_marginBottom="24dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edición del reality:"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginStart="4dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -37,7 +46,7 @@
             android:gravity="center_vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="16dp">
 
             <ImageView
                 android:layout_width="24dp"
@@ -50,42 +59,41 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="12dp"
-                android:background="@null" />
+                android:background="@null"
+                android:spinnerMode="dropdown"/>
         </LinearLayout>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gala activa:"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginStart="4dp"/>
+
         <LinearLayout
+            android:id="@+id/layoutFilterGala"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:background="@drawable/edittext_background"
             android:gravity="center_vertical"
             android:paddingStart="16dp"
-            android:paddingEnd="8dp">
+            android:paddingEnd="16dp">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_search"
+                android:src="@android:drawable/ic_menu_today"
                 app:tint="@color/icon_tint" />
 
-            <EditText
-                android:id="@+id/etBuscarParticipante"
-                android:layout_width="0dp"
+            <Spinner
+                android:id="@+id/spinnerGalas"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
                 android:layout_marginStart="12dp"
                 android:background="@null"
-                android:hint="Buscar por nombre..."
-                android:textColor="@color/white"
-                android:textColorHint="@color/text_hint"
-                android:inputType="text" />
-
-            <ImageButton
-                android:id="@+id/btnEjecutarBusqueda"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@android:drawable/ic_menu_send"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="@color/button_login_bg" />
+                android:spinnerMode="dropdown"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -96,16 +104,18 @@
         android:layout_weight="1"
         android:divider="#333333"
         android:dividerHeight="1dp"
-        android:paddingHorizontal="16dp" />
-
+        android:paddingHorizontal="16dp"/>
     <TextView
         android:id="@+id/tvBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:padding="16dp"
-        android:text="← Volver atrás"
+        android:text="← Volver al menú"
         android:textColor="@color/text_secondary"
+        android:textSize="16sp"
         android:clickable="true"
-        android:focusable="true" />
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless"/>
+
 </LinearLayout>

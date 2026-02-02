@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GranZonaMarciana">
         <activity
+            android:name=".activity.RateSelectionActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.RegistroConcursanteActivity"
             android:exported="false" />
         <activity

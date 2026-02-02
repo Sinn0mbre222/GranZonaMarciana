@@ -35,22 +35,30 @@ public class HistoryAdapter extends ArrayAdapter<Puntuacion> {
 
         Puntuacion puntuacion = getItem(position);
 
-        // Referencias a las vistas del layout 'item_history.xml'
         TextView tvMain = convertView.findViewById(R.id.tvHistoryMain);
         TextView tvDate = convertView.findViewById(R.id.tvHistoryDate);
         TextView tvScore = convertView.findViewById(R.id.tvHistoryScore);
 
         if (puntuacion != null) {
-            // Mostramos el ID de la Gala (o podrías buscar el nombre de la gala si hicieras una consulta extra)
-            tvMain.setText("Gala " + puntuacion.getGalaId());
+            // Mejoramos el texto para que quede claro que es por GALA
+            tvMain.setText("Puntuación en Gala #" + puntuacion.getGalaId());
 
-            // Fecha del voto
+            // Formateo de fecha (asumiendo que usas LocalDate)
             if (puntuacion.getFechaVoto() != null) {
-                tvDate.setText(puntuacion.getFechaVoto().toString());
+                tvDate.setText("Realizado el: " + puntuacion.getFechaVoto().toString());
             }
 
-            // Puntuación con una estrella
+            // Visualización de la puntuación
             tvScore.setText(puntuacion.getValor() + " ★");
+
+            // MEJORA VISUAL: Color según la nota
+            if (puntuacion.getValor() >= 4) {
+                tvScore.setTextColor(context.getColor(android.R.color.holo_green_dark));
+            } else if (puntuacion.getValor() <= 2) {
+                tvScore.setTextColor(context.getColor(android.R.color.holo_red_dark));
+            } else {
+                tvScore.setTextColor(context.getColor(android.R.color.holo_orange_dark));
+            }
         }
 
         return convertView;

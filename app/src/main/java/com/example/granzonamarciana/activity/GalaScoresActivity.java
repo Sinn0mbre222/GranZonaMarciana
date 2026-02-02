@@ -46,11 +46,13 @@ public class GalaScoresActivity extends AppCompatActivity {
         galaService = new GalaService(getApplication());
         puntuacionService = new PuntuacionService(this);
 
-        // 3. Obtener ID de edición del Intent (por defecto 1)
+        // 3. Obtener IDs del Intent
+        // EDITION_ID para cargar todas las galas del spinner
+        // GALA_ID para saber cuál mostrar primero (si viene de la lista)
         int editionId = getIntent().getIntExtra("EDITION_ID", 1);
+        int initialGalaId = getIntent().getIntExtra("GALA_ID", -1);
 
         // 4. Configurar botón volver
-        tvBack = findViewById(R.id.tvBack);
         tvBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -58,29 +60,39 @@ public class GalaScoresActivity extends AppCompatActivity {
             }
         });
 
-        // 5. Cargar datos iniciales
-        cargarGalas(editionId);
+        // 5. Cargar galas y posicionar el Spinner
+        cargarGalas(editionId, initialGalaId);
     }
 
     private void initViews() {
         spinnerGalas = findViewById(R.id.spinnerGalaResults);
         lvRanking = findViewById(R.id.lvGalaScores);
+        tvBack = findViewById(R.id.tvBack);
     }
 
-    private void cargarGalas(int editionId) {
+    private void cargarGalas(int editionId, int initialGalaId) {
         galaService.getGalasByEdicion(editionId).observe(this, galas -> {
             if (galas != null && !galas.isEmpty()) {
                 this.listaGalas = galas;
                 List<String> nombresGalas = new ArrayList<>();
+                int positionToSelect = 0;
 
-                for (Gala g : galas) {
+                for (int i = 0; i < galas.size(); i++) {
+                    Gala g = galas.get(i);
                     nombresGalas.add("Gala " + g.getId() + " (" + g.getFecha() + ")");
+
+                    // Si el ID de esta gala coincide con el que pulsamos en la lista, guardamos su posición
+                    if (g.getId() == initialGalaId) {
+                        positionToSelect = i;
+                    }
                 }
 
-                // Usamos el layout personalizado para que el texto sea blanco
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_rol_item, nombresGalas);
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinnerGalas.setAdapter(adapter);
+
+                // Forzamos al Spinner a seleccionar la gala correcta
+                spinnerGalas.setSelection(positionToSelect);
 
                 spinnerGalas.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
@@ -99,29 +111,19 @@ public class GalaScoresActivity extends AppCompatActivity {
     }
 
     private void actualizarRanking(int galaId) {
-        // Obtenemos los votos usando el POJO que une Puntuación con Concursante
         puntuacionService.obtenerResultadosGala(galaId).observe(this, votos -> {
             if (votos != null && !votos.isEmpty()) {
-
-                // Mapas para procesar los datos en una sola pasada
                 Map<Integer, Double> sumaNotas = new HashMap<>();
                 Map<Integer, Integer> contadorVotos = new HashMap<>();
                 Map<Integer, Concursante> concursantesMap = new HashMap<>();
 
                 for (PuntuacionConConcursante item : votos) {
                     int id = item.concursante.getId();
-
-                    // Guardamos el objeto concursante
                     concursantesMap.put(id, item.concursante);
-
-                    // Acumulamos la puntuación
                     sumaNotas.put(id, sumaNotas.getOrDefault(id, 0.0) + item.puntuacion.getValor());
-
-                    // Contamos el voto
                     contadorVotos.put(id, contadorVotos.getOrDefault(id, 0) + 1);
                 }
 
-                // Calculamos las medias finales y preparamos la lista para el Ranking
                 List<Concursante> ranking = new ArrayList<>(concursantesMap.values());
                 Map<Integer, Double> mediasFinales = new HashMap<>();
 
@@ -131,17 +133,14 @@ public class GalaScoresActivity extends AppCompatActivity {
                     mediasFinales.put(id, media);
                 }
 
-                // Ordenar la lista de mayor a menor puntuación media
                 Collections.sort(ranking, (c1, c2) ->
                         mediasFinales.get(c2.getId()).compareTo(mediasFinales.get(c1.getId()))
                 );
 
-                // Enviamos los datos al Adapter
                 GalaScoreAdapter adapter = new GalaScoreAdapter(this, R.layout.item_gala_score, ranking, mediasFinales);
                 lvRanking.setAdapter(adapter);
 
             } else {
-                // Si no hay votos, limpiamos la lista
                 lvRanking.setAdapter(null);
                 Toast.makeText(this, "Aún no hay puntuaciones en esta gala.", Toast.LENGTH_SHORT).show();
             }

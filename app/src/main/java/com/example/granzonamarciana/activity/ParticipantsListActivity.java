@@ -40,27 +40,12 @@ public class ParticipantsListActivity extends AppCompatActivity {
 
         cargarEdiciones();
 
-        lvParticipantes.setOnItemClickListener((parent, view, position, id) -> {
-            // Obtenemos el objeto de la lista (puede ser del adaptador filtrado)
-            Concursante seleccionado = adapter.getItem(position);
-
-            if (seleccionado != null) {
-                // CORRECCIÓN: Ahora vamos al Perfil Público, no a Votar directamente
-                Intent intent = new Intent(ParticipantsListActivity.this, ParticipantPublicActivity.class);
-
-                // Pasamos el ID para cargar los datos en la siguiente pantalla
-                intent.putExtra("CONCURSANTE_ID", seleccionado.getId());
-
-                startActivity(intent);
-            }
-        });
-
         // 1. Configurar buscador por botón
         btnBuscar.setOnClickListener(v -> {
             filtrarListaLocal(etBuscar.getText().toString());
         });
 
-        // 2. Mantener buscador en tiempo real (opcional, pero recomendado)
+        // 2. Mantener buscador en tiempo real
         etBuscar.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -72,17 +57,15 @@ public class ParticipantsListActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // 3. CONFIGURAR CLICK EN LA LISTA PARA VALORAR
+        // 3. CONFIGURAR CLICK EN LA LISTA -> IR A PERFIL PÚBLICO (CORREGIDO)
         lvParticipantes.setOnItemClickListener((parent, view, position, id) -> {
+            // Obtenemos el objeto directamente del adapter (para respetar el filtrado)
             Concursante seleccionado = (Concursante) parent.getItemAtPosition(position);
 
             if (seleccionado != null) {
-                Intent intent = new Intent(this, RateParticipantActivity.class);
-                // PASAMOS LOS EXTRAS QUE NECESITA LA ACTIVITY DE VOTAR
+                // CAMBIO IMPORTANTE: Vamos a ParticipantPublicActivity, NO a RateParticipantActivity
+                Intent intent = new Intent(ParticipantsListActivity.this, ParticipantPublicActivity.class);
                 intent.putExtra("CONCURSANTE_ID", seleccionado.getId());
-                intent.putExtra("CONCURSANTE_NOMBRE", seleccionado.getNombre() + " " + seleccionado.getPrimerApellido());
-                intent.putExtra("CONCURSANTE_FOTO", seleccionado.getImagenUrl());
-
                 startActivity(intent);
             }
         });

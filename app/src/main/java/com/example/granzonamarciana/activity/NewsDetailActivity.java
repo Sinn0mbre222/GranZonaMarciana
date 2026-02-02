@@ -17,17 +17,15 @@ public class NewsDetailActivity extends AppCompatActivity {
         int id = getIntent().getIntExtra("ID", -1);
         NoticiaService service = new NoticiaService(this);
 
-        service.listarNoticiaePorid(id).observe(this, n -> {
+        // Usamos buscarPorId tal cual está en tu NoticiaService
+        service.buscarPorId(id).observe(this, n -> {
             if (n != null) {
                 ((TextView)findViewById(R.id.tvNewsTitle)).setText(n.getCabecera());
                 ((TextView)findViewById(R.id.tvNewsBody)).setText(n.getCuerpo());
 
-                // Cargar imagen con Picasso
                 ImageView imageView = findViewById(R.id.ivNewsDetail);
-                Picasso.get()
-                        .load(n.getImagen())
+                Picasso.get().load(n.getImagen())
                         .placeholder(android.R.drawable.ic_menu_gallery)
-                        .error(android.R.drawable.ic_menu_gallery)
                         .into(imageView);
             }
         });

@@ -35,7 +35,7 @@ public class MenuConcursanteActivity extends AppCompatActivity {
         // Navegación
         btnMyProfile.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
         btnApplyEdition.setOnClickListener(v -> startActivity(new Intent(this, ApplyEditionActivity.class)));
-        btnMyApplications.setOnClickListener(v -> startActivity(new Intent(this, MyApplicationsActivity.class)));
+        btnMyApplications.setOnClickListener(v -> startActivity(new Intent(this, MisSolicitudesActivity.class)));
         btnMyEditions.setOnClickListener(v -> startActivity(new Intent(this, EditionListActivity.class)));
         btnMyGalas.setOnClickListener(v -> startActivity(new Intent(this, GalasListActivity.class)));
         btnViewNews.setOnClickListener(v -> startActivity(new Intent(this, NewsListActivity.class)));

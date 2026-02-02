@@ -5,21 +5,77 @@
     android:background="@color/background_dark"
     android:orientation="vertical">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="24dp"
-        android:text="Mis Solicitudes"
-        android:textColor="@color/white"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mis Solicitudes"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="8dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filtrar por:"
+            android:textColor="@color/text_secondary"
+            android:layout_marginEnd="8dp"/>
+
+        <Spinner
+            android:id="@+id/spEdicionFilter"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/edittext_background"
+            android:spinnerMode="dropdown"/>
+    </LinearLayout>
 
     <ListView
         android:id="@+id/lvApplications"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:divider="@android:color/transparent"
         android:dividerHeight="8dp"
         android:padding="8dp"
         android:clipToPadding="false" />
+
+    <TextView
+        android:id="@+id/tvEmptyList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="No hay solicitudes para esta selección."
+        android:gravity="center"
+        android:textColor="@color/text_secondary"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/tvBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="← Volver atrás"
+        android:textColor="@color/text_secondary"
+        android:textSize="16sp"
+        android:padding="16dp"
+        android:layout_gravity="center_horizontal"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_marginBottom="16dp"/>
+
 </LinearLayout>

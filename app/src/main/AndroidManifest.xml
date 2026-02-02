@@ -92,7 +92,7 @@
             android:name=".activity.ApplicationReviewActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.MyApplicationsActivity"
+            android:name=".activity.MisSolicitudesActivity"
             android:exported="false" />
         <activity
             android:name=".activity.ManageUsersActivity"

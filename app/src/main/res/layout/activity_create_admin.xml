@@ -116,7 +116,7 @@
             android:textColorHint="@color/text_hint"
             android:textSize="16sp"
             android:hint="Teléfono"
-            android:inputType="phone" />
+            android:inputType="phone"/>
 
         <EditText
             android:id="@+id/etImageUrl"

@@ -13,7 +13,7 @@ import com.example.granzonamarciana.entity.EstadoSolicitud;
 import com.example.granzonamarciana.entity.TipoRol;
 import com.example.granzonamarciana.service.ConcursanteService;
 import com.example.granzonamarciana.service.EdicionService;
-import com.example.granzonamarciana.service.SolicitudService; // Asegúrate de tenerlo creado
+import com.example.granzonamarciana.service.SolicitudService;
 import org.mindrot.jbcrypt.BCrypt;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -92,49 +92,75 @@ public class RegistroConcursanteActivity extends AppCompatActivity {
     }
 
     private void registrarUsuario() {
+        // 1. Obtener todos los textos
         String username = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
+        String name = etName.getText().toString().trim();
+        String apellido1 = etApellido1.getText().toString().trim();
+        String apellido2 = etApellido2.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
         String motivacion = etMotivo.getText().toString().trim();
+        String imageUrlInput = etImageUrl.getText().toString().trim();
 
-        if (username.isEmpty() || password.isEmpty() || motivacion.isEmpty()) {
-            Toast.makeText(this, "Rellena el usuario, la contraseña y el motivo", Toast.LENGTH_SHORT).show();
+        // 2. Validación: Todos obligatorios EXCEPTO la imagen
+        if (username.isEmpty() || password.isEmpty() || name.isEmpty() ||
+                apellido1.isEmpty() || apellido2.isEmpty() || email.isEmpty() ||
+                phone.isEmpty() || motivacion.isEmpty()) {
+
+            Toast.makeText(this, "Todos los campos son obligatorios (excepto imagen)", Toast.LENGTH_LONG).show();
             return;
         }
 
-        // 1. Crear el objeto Concursante
+        // 3. Lógica de la imagen para Picasso
+        // Si el usuario deja el campo vacío, usamos la referencia local "ic_default_avatar".
+        // Si escribe algo (una URL), guardamos esa URL tal cual.
+        String finalImageUrl;
+        if (imageUrlInput.isEmpty()) {
+            finalImageUrl = "ic_default_avatar";
+        } else {
+            finalImageUrl = imageUrlInput;
+        }
+
+        // 4. Crear el objeto Concursante
         Concursante c = new Concursante(
                 username,
                 BCrypt.hashpw(password, BCrypt.gensalt()),
-                etName.getText().toString().trim(),
-                etApellido1.getText().toString().trim(),
-                etApellido2.getText().toString().trim(),
-                etPhone.getText().toString().trim(),
-                etEmail.getText().toString().trim(),
-                etImageUrl.getText().toString().isEmpty() ? "ic_default_avatar" : etImageUrl.getText().toString(),
+                name,
+                apellido1,
+                apellido2,
+                phone,
+                email,
+                finalImageUrl, // Guardamos la URL o el avatar por defecto
                 TipoRol.CONCURSANTE,
                 LocalDate.now()
         );
 
-        // 2. Insertar concursante y LUEGO crear la solicitud
-        // IMPORTANTE: Como Room es asíncrono, necesitamos saber el ID que se le ha asignado.
-        // Una forma sencilla es observar el LiveData del concursante por username justo después de insertar.
+        // 5. Insertar concursante y LUEGO crear la solicitud
         concursanteService.insert(c);
 
+        // Esperamos a que se inserte para recuperar el ID
         concursanteService.buscarConcursantePorUsername(username).observe(this, nuevoCon -> {
             if (nuevoCon != null) {
-                // Una vez que el concursante existe en la BD, creamos su solicitud
+
+                // Validación extra por si la lista de ediciones no ha cargado
+                if (listaEdiciones.isEmpty()) {
+                    Toast.makeText(this, "No hay ediciones disponibles", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 int edicionId = listaEdiciones.get(spEdicion.getSelectedItemPosition()).getId();
 
                 Solicitud nuevaSolicitud = new Solicitud(
                         edicionId,
                         nuevoCon.getId(),
                         motivacion,
-                        EstadoSolicitud.PENDIENTE // Siempre empieza pendiente
+                        EstadoSolicitud.PENDIENTE
                 );
 
                 solicitudService.insert(nuevaSolicitud);
 
-                Toast.makeText(this, "Registro y solicitud enviados. Espera la aceptación.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Registro completado. ¡Mucha suerte!", Toast.LENGTH_LONG).show();
                 startActivity(new Intent(this, LoginActivity.class));
                 finish();
             }

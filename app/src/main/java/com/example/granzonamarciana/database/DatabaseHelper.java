@@ -36,7 +36,7 @@ import com.example.granzonamarciana.entity.Solicitud;
         Puntuacion.class
         // Agregar aquí las demás clases que se vayan creando
 }, version = 1)
-@TypeConverters({LocalDateConverter.class})
+@TypeConverters({LocalDateConverter.class, EstadoSolicitudConverter.class})
 public abstract class DatabaseHelper extends RoomDatabase {
 
     //Añadir aquí los demás dao

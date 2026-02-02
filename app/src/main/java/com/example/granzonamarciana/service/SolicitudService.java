@@ -43,13 +43,17 @@ public class SolicitudService {
     // Aceptar Solicitud
     public void aceptarSolicitud(Solicitud solicitud, int maxParticipantes) {
         executorService.execute(() -> {
+            // Contamos cuántos han sido ya aceptados en esta edición
             int aceptadas = solicitudDao.countAceptadasByEdition(solicitud.getEditionId());
-
+            //Comprobamos si hay menos aceptadas que el maximo de participantes
             if (aceptadas < maxParticipantes) {
+                // Aceptamos la solicitud actual
                 solicitud.setEstado(EstadoSolicitud.ACEPTADA);
                 solicitudDao.update(solicitud);
 
-                if (aceptadas + 1 == maxParticipantes) {
+                // Comprobamos si con esta hemos llegado al límite
+                if (aceptadas + 1 >= maxParticipantes) {
+                    // CANCELACIÓN MASIVA: Todas las demás de esta edición pasan a RECHAZADA
                     solicitudDao.cancelarRestantes(solicitud.getEditionId(), EstadoSolicitud.RECHAZADA);
                 }
             }

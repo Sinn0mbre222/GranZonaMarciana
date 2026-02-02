@@ -19,9 +19,10 @@ public class SolicitudAdapter extends BaseAdapter {
         this.context = context;
     }
 
+    // Mertodo para actualizar los datos desde la Activity
     public void setSolicitudes(List<Solicitud> solicitudes) {
         this.solicitudes = solicitudes;
-        notifyDataSetChanged();
+        notifyDataSetChanged(); // Esto refresca la lista visualmente
     }
 
     @Override
@@ -45,15 +46,25 @@ public class SolicitudAdapter extends BaseAdapter {
         TextView tvMsg = convertView.findViewById(R.id.tvMessagePreview);
         TextView tvStatus = convertView.findViewById(R.id.tvStatus);
 
-        tvEdition.setText("Edición #" + actual.getEditionId());
-        tvMsg.setText(actual.getMensaje());
-        tvStatus.setText(actual.getEstado().toString());
+        // Asegúrate de que los IDs (tvEditionLabel, etc.) existan en item_solicitud.xml
+        if (actual != null) {
+            tvEdition.setText("Edición #" + actual.getEditionId());
+            tvMsg.setText(actual.getMensaje());
+            tvStatus.setText(actual.getEstado().toString());
 
-        // Colores según estado
-        switch (actual.getEstado()) {
-            case ACEPTADA: tvStatus.setTextColor(context.getColor(android.R.color.holo_green_light)); break;
-            case RECHAZADA: tvStatus.setTextColor(context.getColor(android.R.color.holo_red_light)); break;
-            default: tvStatus.setTextColor(context.getColor(R.color.text_secondary)); break;
+            // Colores según estado para mejor feedback visual
+            switch (actual.getEstado()) {
+                case ACEPTADA:
+                    tvStatus.setTextColor(context.getColor(android.R.color.holo_green_dark));
+                    break;
+                case RECHAZADA:
+                    tvStatus.setTextColor(context.getColor(android.R.color.holo_red_dark));
+                    break;
+                case PENDIENTE:
+                default:
+                    tvStatus.setTextColor(context.getColor(android.R.color.darker_gray));
+                    break;
+            }
         }
 
         return convertView;

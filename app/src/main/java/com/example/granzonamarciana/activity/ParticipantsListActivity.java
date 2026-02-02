@@ -40,6 +40,21 @@ public class ParticipantsListActivity extends AppCompatActivity {
 
         cargarEdiciones();
 
+        lvParticipantes.setOnItemClickListener((parent, view, position, id) -> {
+            // Obtenemos el objeto de la lista (puede ser del adaptador filtrado)
+            Concursante seleccionado = adapter.getItem(position);
+
+            if (seleccionado != null) {
+                // CORRECCIÓN: Ahora vamos al Perfil Público, no a Votar directamente
+                Intent intent = new Intent(ParticipantsListActivity.this, ParticipantPublicActivity.class);
+
+                // Pasamos el ID para cargar los datos en la siguiente pantalla
+                intent.putExtra("CONCURSANTE_ID", seleccionado.getId());
+
+                startActivity(intent);
+            }
+        });
+
         // 1. Configurar buscador por botón
         btnBuscar.setOnClickListener(v -> {
             filtrarListaLocal(etBuscar.getText().toString());

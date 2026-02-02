@@ -35,4 +35,6 @@ public interface ConcursanteDao {
     @Transaction
     @Query("SELECT * FROM concursantes WHERE id IN (SELECT concursanteId FROM puntuaciones WHERE galaId = :galaId)")
     LiveData<List<ConcursanteConPuntuaciones>> getRankingGala(int galaId);
+
+
 }

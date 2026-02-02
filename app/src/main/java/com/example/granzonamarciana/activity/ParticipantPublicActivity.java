@@ -42,7 +42,6 @@ public class ParticipantPublicActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_participant_public);
 
-        // 1. Recibir ID del concursante desde la lista anterior
         concursanteId = getIntent().getIntExtra("CONCURSANTE_ID", -1);
         if (concursanteId == -1) {
             Toast.makeText(this, "Error al cargar concursante", Toast.LENGTH_SHORT).show();
@@ -50,19 +49,17 @@ public class ParticipantPublicActivity extends AppCompatActivity {
             return;
         }
 
-        // 2. Inicializar
         initViews();
         concursanteService = new ConcursanteService(this);
         puntuacionService = new PuntuacionService(this);
 
-        // 3. Cargar datos
         cargarDatosConcursante();
         cargarHistorial();
 
-        // 4. Configurar botón según el rol (Invitado vs Espectador)
+        // Configurar visibilidad del botón según rol
         configurarBotonPuntuar();
 
-        // Configurar botón volver
+        // Botón volver
         findViewById(R.id.tvBack).setOnClickListener(v -> finish());
     }
 
@@ -78,6 +75,7 @@ public class ParticipantPublicActivity extends AppCompatActivity {
     private void cargarDatosConcursante() {
         concursanteService.obtenerPorId(concursanteId).observe(this, concursante -> {
             if (concursante != null) {
+                // Usamos getPrimerApellido corregido
                 String nombreCompleto = concursante.getNombre() + " " + concursante.getPrimerApellido();
                 tvNombre.setText(nombreCompleto);
                 ivFoto.setImageResource(R.drawable.ic_default_avatar);
@@ -100,9 +98,7 @@ public class ParticipantPublicActivity extends AppCompatActivity {
 
         if (!puntuaciones.isEmpty()) {
             double suma = 0;
-            for (Puntuacion p : puntuaciones) {
-                suma += p.getValor();
-            }
+            for (Puntuacion p : puntuaciones) suma += p.getValor();
             double media = suma / puntuaciones.size();
             tvAvgScore.setText(String.format(Locale.getDefault(), "Media: %.1f", media));
         } else {
@@ -111,14 +107,13 @@ public class ParticipantPublicActivity extends AppCompatActivity {
     }
 
     private void configurarBotonPuntuar() {
-        // CORRECCIÓN: Usamos "granZMUser" para coincidir con LoginActivity
+        // CORRECCIÓN: Usamos "granZMUser" que es lo que usa LoginActivity ahora
         SharedPreferences prefs = getSharedPreferences("granZMUser", Context.MODE_PRIVATE);
 
-        // Recuperamos el rol. Si es invitado, en LoginActivity lo guardamos como "INVITADO"
+        // LoginActivity guarda el rol con la clave "rol"
         String rolStr = prefs.getString("rol", null);
 
-        // Solo mostramos el botón si el rol es ESPECTADOR.
-        // Si es "INVITADO", "ADMINISTRADOR", "CONCURSANTE" o null, el botón desaparece.
+        // Solo mostramos botón si es ESPECTADOR
         if (rolStr != null && rolStr.equals(TipoRol.ESPECTADOR.name())) {
             btnRateNow.setVisibility(View.VISIBLE);
             btnRateNow.setOnClickListener(v -> {
@@ -128,7 +123,7 @@ public class ParticipantPublicActivity extends AppCompatActivity {
                 startActivity(intent);
             });
         } else {
-            // Aquí entran los INVITADOS: pueden ver todo, pero el botón se oculta.
+            // Invitados, Admins y Concursantes NO ven el botón
             btnRateNow.setVisibility(View.GONE);
         }
     }

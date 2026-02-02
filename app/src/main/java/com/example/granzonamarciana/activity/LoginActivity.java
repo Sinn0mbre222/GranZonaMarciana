@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
         //Comprobar sesión y poblar BD
         comprobarSiEstaLogueado();
 
-        //populateBD();
+        populateBD();
 
         //Inicializar Servicios
         administradorService = new AdministradorService(this);

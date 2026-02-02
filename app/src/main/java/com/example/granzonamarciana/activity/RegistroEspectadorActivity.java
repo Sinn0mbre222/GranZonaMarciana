@@ -85,24 +85,31 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
         String ap2 = etApellido2.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String tlf = etPhone.getText().toString().trim();
-        String img = etImageUrl.getText().toString().trim();
+        String imgInput = etImageUrl.getText().toString().trim();
 
-        // Validaciones básicas
-        if (username.isEmpty() || password.isEmpty() || nombre.isEmpty() || email.isEmpty()) {
-            Toast.makeText(this, "Por favor, rellena los campos obligatorios", Toast.LENGTH_SHORT).show();
+        // 1. VALIDACIÓN: Todos obligatorios EXCEPTO la imagen
+        if (username.isEmpty() || password.isEmpty() || nombre.isEmpty() ||
+                ap1.isEmpty() || ap2.isEmpty() || email.isEmpty() || tlf.isEmpty()) {
+
+            Toast.makeText(this, "Por favor, rellena todos los campos (excepto imagen)", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Imagen por defecto si está vacío
-        if (img.isEmpty()) {
-            img = "ic_default_avatar";
+        // 2. LÓGICA DE IMAGEN (Compatible con Picasso)
+        // Si escribe algo, asumimos que es una URL o un nombre válido.
+        // Si lo deja vacío, forzamos el avatar por defecto.
+        String finalImage;
+        if (imgInput.isEmpty()) {
+            finalImage = "ic_default_avatar";
+        } else {
+            finalImage = imgInput;
         }
 
         // Encriptar contraseña
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
         try {
-            // Crear el objeto Espectador
+            // Crear el objeto Espectador con la imagen procesada
             Espectador e = new Espectador(
                     username,
                     hashedPassword,
@@ -111,7 +118,7 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
                     ap2,
                     tlf,
                     email,
-                    img,
+                    finalImage,
                     TipoRol.ESPECTADOR,
                     LocalDate.now()
             );

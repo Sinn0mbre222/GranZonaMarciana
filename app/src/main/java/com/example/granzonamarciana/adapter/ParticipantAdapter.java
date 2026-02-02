@@ -1,6 +1,7 @@
 package com.example.granzonamarciana.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.granzonamarciana.R;
+import com.example.granzonamarciana.activity.ProfileActivity; // Importar
 import com.example.granzonamarciana.entity.Concursante;
 import com.squareup.picasso.Picasso;
 
@@ -59,17 +61,23 @@ public class ParticipantAdapter extends ArrayAdapter<Concursante> {
 
             String url = concursante.getImagenUrl();
 
-            // Comprobamos si hay una URL válida y que no sea el texto por defecto
             if (url != null && !url.isEmpty() && !url.equals("ic_default_avatar")) {
                 Picasso.get()
                         .load(url)
-                        .placeholder(R.drawable.ic_default_avatar) // Imagen mientras carga
-                        .error(R.drawable.ic_default_avatar)       // Imagen si el link falla
+                        .placeholder(R.drawable.ic_default_avatar)
+                        .error(R.drawable.ic_default_avatar)
                         .into(holder.ivFoto);
             } else {
-                // Si no hay URL, ponemos la imagen del proyecto
                 holder.ivFoto.setImageResource(R.drawable.ic_default_avatar);
             }
+
+            // --- CLICK PARA VER EL PERFIL DEL CONCURSANTE ---
+            convertView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, ProfileActivity.class);
+                intent.putExtra("TARGET_USER_ID", concursante.getId());
+                intent.putExtra("TARGET_USER_ROLE", "CONCURSANTE"); // Siempre es concursante en esta lista
+                context.startActivity(intent);
+            });
         }
 
         return convertView;

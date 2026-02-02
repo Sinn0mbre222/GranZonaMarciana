@@ -1,6 +1,7 @@
 package com.example.granzonamarciana.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +14,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.granzonamarciana.R;
-import com.example.granzonamarciana.entity.DomainEntity; // Usamos la clase padre para manejar ambos (Espectador/Concursante)
+import com.example.granzonamarciana.activity.ProfileActivity; // Importar ProfileActivity
+import com.example.granzonamarciana.entity.DomainEntity;
 import com.example.granzonamarciana.entity.Espectador;
 import com.example.granzonamarciana.entity.Concursante;
-import com.example.granzonamarciana.entity.TipoRol;
 
 import java.util.List;
 
@@ -24,9 +25,7 @@ public class UserAdapter extends ArrayAdapter<DomainEntity> {
 
     private Context context;
     private int resource;
-    private Runnable onDeleteAction; // Para avisar a la activity que borre a alguien
 
-    // Pasamos una lista genérica de entidades (pueden ser Espectadores o Concursantes)
     public UserAdapter(@NonNull Context context, int resource, @NonNull List<DomainEntity> objects) {
         super(context, resource, objects);
         this.context = context;
@@ -48,27 +47,44 @@ public class UserAdapter extends ArrayAdapter<DomainEntity> {
         ImageView ivIcon = convertView.findViewById(R.id.ivUserIcon);
 
         if (usuario != null) {
-            // Determinar Nombre y Rol
             String nombre = "";
             String rol = "";
+            int userId = -1;
+            String userRoleStr = "";
 
             if (usuario instanceof Espectador) {
-                nombre = ((Espectador) usuario).getNombre(); // O getUsername si lo tienes
+                nombre = ((Espectador) usuario).getNombre();
                 rol = "ESPECTADOR";
-                ivIcon.setImageResource(R.drawable.ic_person); // Asegúrate de tener este icono o usa ic_launcher_foreground
+                userRoleStr = "ESPECTADOR";
+                userId = ((Espectador) usuario).getId();
+                ivIcon.setImageResource(R.drawable.ic_person);
             } else if (usuario instanceof Concursante) {
                 nombre = ((Concursante) usuario).getNombre();
                 rol = "CONCURSANTE";
+                userRoleStr = "CONCURSANTE";
+                userId = ((Concursante) usuario).getId();
                 ivIcon.setImageResource(R.drawable.ic_launcher_foreground);
             }
 
             tvUsername.setText(nombre);
             tvRole.setText(rol);
 
-            // Botón Eliminar (Simplemente ocultamos el ítem o lanzamos acción)
-            // En una app real, aquí llamaríamos al servicio para borrar
+            // --- CLICK EN EL ELEMENTO PARA IR AL PERFIL ---
+            // Guardamos variables finales para usar en la lambda
+            final int finalUserId = userId;
+            final String finalUserRoleStr = userRoleStr;
+
+            convertView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, ProfileActivity.class);
+                intent.putExtra("TARGET_USER_ID", finalUserId);
+                intent.putExtra("TARGET_USER_ROLE", finalUserRoleStr);
+                context.startActivity(intent);
+            });
+
+            // Botón Eliminar (Independiente del click en el perfil)
             ivDelete.setOnClickListener(v -> {
-                Toast.makeText(context, "Funcionalidad de borrar pendiente de implementar en servicio", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Borrar: " + finalUserId, Toast.LENGTH_SHORT).show();
+
             });
         }
 

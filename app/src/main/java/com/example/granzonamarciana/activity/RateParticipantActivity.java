@@ -153,21 +153,21 @@ public class RateParticipantActivity extends AppCompatActivity {
             if (galas != null) {
                 for (Gala g : galas) {
                     LocalDate fGala = g.getFecha();
-                    // Requisito PDF: 24h posteriores (Hoy o Ayer)
+                    // REQUISITO PDF: 24h posteriores (Mismo día o día anterior)
                     if (fGala.isEqual(hoy) || fGala.isEqual(hoy.minusDays(1))) {
                         listaGalasActivas.add(g);
-                        nombresGalas.add("Gala " + g.getId() + " (" + fGala + ")");
+                        nombresGalas.add("Gala #" + g.getId() + " (" + fGala + ")");
                     }
                 }
             }
 
             if (listaGalasActivas.isEmpty()) {
                 btnEnviar.setEnabled(false);
-                nombresGalas.add("No hay galas disponibles");
+                Toast.makeText(this, "No hay galas abiertas (plazo de 24h cerrado)", Toast.LENGTH_LONG).show();
+                nombresGalas.add("Plazo de votación cerrado");
             }
 
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_rol_item, nombresGalas);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerGalas.setAdapter(adapter);
         });
     }

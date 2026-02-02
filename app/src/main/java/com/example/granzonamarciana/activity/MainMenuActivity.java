@@ -7,9 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.granzonamarciana.R;
 
 public class MainMenuActivity extends AppCompatActivity {
@@ -22,6 +20,7 @@ public class MainMenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
+        // Inicializar Vistas
         tvWelcome = findViewById(R.id.tvWelcome);
         btnProfile = findViewById(R.id.btnProfile);
         btnEditions = findViewById(R.id.btnEditions);
@@ -30,46 +29,46 @@ public class MainMenuActivity extends AppCompatActivity {
         btnParticipants = findViewById(R.id.btnParticipants);
         btnLogout = findViewById(R.id.btnLogout);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("granZMUser", MODE_PRIVATE);
-        String nombreUsuario = sharedPreferences.getString("username", "Invitado");
-        int userId = sharedPreferences.getInt("id", -1); // Si no hay ID, asumimos -1 (Invitado)
+        // Cargar Sesión
+        SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
+        String nombreUsuario = prefs.getString("username", "Invitado");
+        int userId = prefs.getInt("id", -1);
 
         tvWelcome.setText("Bienvenido/a, " + nombreUsuario);
 
+        // RESTRICCIÓN: El invitado no puede ver Galas (puntuaciones)
+        if (userId == -1) {
+            btnGalas.setVisibility(View.GONE);
+        }
 
+        // --- LISTENERS ---
+
+        // El invitado no tiene perfil propio, le avisamos
         btnProfile.setOnClickListener(v -> {
-            if (userId == -1) {
-                Toast.makeText(MainMenuActivity.this, "Función no disponible para invitados. Regístrate para acceder.", Toast.LENGTH_LONG).show();
-            } else {
-                Intent intent = new Intent(MainMenuActivity.this, ProfileActivity.class);
-                startActivity(intent);
-            }
+            Toast.makeText(this, "Acceso solo para usuarios registrados", Toast.LENGTH_SHORT).show();
         });
 
+        // Ediciones (Consulta pública)
         btnEditions.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, EditionListActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, EditionListActivity.class));
         });
 
+        // Noticias (Consulta pública)
         btnNews.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, NewsListActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, NewsListActivity.class));
         });
 
-        btnGalas.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, GalasListActivity.class);
-            startActivity(intent);
-        });
-
+        // Participantes (Consulta pública -> ParticipantsListActivity)
         btnParticipants.setOnClickListener(v -> {
-            Intent intent = new Intent(MainMenuActivity.this, ParticipantsListActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ParticipantsListActivity.class));
         });
 
+        // Salir: Borra todo y vuelve al Login
         btnLogout.setOnClickListener(v -> {
-            sharedPreferences.edit().clear().apply();
-
-            Intent intent = new Intent(MainMenuActivity.this, LoginActivity.class);
+            prefs.edit().clear().apply();
+            Intent intent = new Intent(this, LoginActivity.class);
+            // Esto limpia la pila de actividades para que no pueda volver atrás
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
         });

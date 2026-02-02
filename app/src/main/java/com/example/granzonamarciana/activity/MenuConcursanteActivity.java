@@ -28,11 +28,9 @@ public class MenuConcursanteActivity extends AppCompatActivity {
         btnViewNews = findViewById(R.id.btnViewNews);
         btnLogout = findViewById(R.id.btnLogout);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("granZMUser", MODE_PRIVATE);
-        String username = sharedPreferences.getString("username", "Concursante");
-        tvWelcomeConcursante.setText("¡Buena suerte, " + username + "!");
+        SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
+        tvWelcomeConcursante.setText("¡Mucha suerte, " + prefs.getString("username", "") + "!");
 
-        // Navegación
         btnMyProfile.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
         btnApplyEdition.setOnClickListener(v -> startActivity(new Intent(this, ApplyEditionActivity.class)));
         btnMyApplications.setOnClickListener(v -> startActivity(new Intent(this, MisSolicitudesActivity.class)));
@@ -40,13 +38,10 @@ public class MenuConcursanteActivity extends AppCompatActivity {
         btnMyGalas.setOnClickListener(v -> startActivity(new Intent(this, GalasListActivity.class)));
         btnViewNews.setOnClickListener(v -> startActivity(new Intent(this, NewsListActivity.class)));
 
-        btnLogout.setOnClickListener(v -> cerrarSesion());
-    }
-
-    private void cerrarSesion() {
-        getSharedPreferences("granZMUser", MODE_PRIVATE).edit().clear().apply();
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
-        finish();
+        btnLogout.setOnClickListener(v -> {
+            getSharedPreferences("granZMUser", MODE_PRIVATE).edit().clear().apply();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        });
     }
 }

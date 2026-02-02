@@ -32,4 +32,6 @@ public interface EdicionDAO {
     @Query("SELECT * FROM ediciones WHERE id = :edicionId")
     LiveData<EdicionConGalas> getEdicionConGalas(int edicionId);
 
+    @Query("SELECT * FROM ediciones")
+    List<Edicion> findAllSync();
 }

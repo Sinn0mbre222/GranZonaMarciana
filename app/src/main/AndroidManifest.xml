@@ -97,6 +97,10 @@
         <activity
             android:name=".activity.ManageUsersActivity"
             android:exported="false" />
+        <activity
+            android:name=".activity.CreateAdminActivity"
+            android:exported="false"
+            android:label="Registrar Administrador" />
     </application>
 
 </manifest>

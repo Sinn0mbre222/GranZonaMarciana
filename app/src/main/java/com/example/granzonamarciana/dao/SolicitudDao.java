@@ -44,4 +44,11 @@ public interface SolicitudDao {
     @Transaction
     @Query("SELECT * FROM solicitudes WHERE editionId = :editionId AND estado = 'PENDIENTE'")
     LiveData<List<SolicitudConConcursante>> getSolicitudesPendientes(int editionId);
+    // Cuenta las solicitudes por usuario y edicion
+    @Query("SELECT COUNT(*) FROM solicitudes WHERE editionId = :editionId AND concursanteId = :contestantId")
+    int countSolicitudesByUsuarioYEdicion(int editionId, int contestantId);
+    //Ids de las ediciones donde el usuario ya tiene una solicitud
+    @Query("SELECT editionId FROM solicitudes WHERE concursanteId = :contestantId")
+    List<Integer> getEdicionesSolicitadasPorUsuario(int contestantId);
+
 }

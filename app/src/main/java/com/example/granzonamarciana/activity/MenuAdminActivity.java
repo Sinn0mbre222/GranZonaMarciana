@@ -43,7 +43,7 @@ public class MenuAdminActivity extends AppCompatActivity {
         btnManageGalas.setOnClickListener(v -> startActivity(new Intent(this, GalasListActivity.class)));
 
         btnCreateAdmin.setOnClickListener(v -> {
-            Intent intent = new Intent(this, RegistroEspectadorActivity.class);
+            Intent intent = new Intent(this, CreateAdminActivity.class);
             intent.putExtra("isAdminCreation", true);
             startActivity(intent);
         });

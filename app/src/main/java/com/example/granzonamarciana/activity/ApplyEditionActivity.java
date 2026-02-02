@@ -109,15 +109,26 @@ public class ApplyEditionActivity extends AppCompatActivity {
     }
 
     private void enviarSolicitud(String mensaje) {
-        Solicitud nuevaSolicitud = new Solicitud(
-                edicionSeleccionada.getId(),
-                currentUserId,
-                mensaje,
-                EstadoSolicitud.PENDIENTE
-        );
+        // Preguntamos rápido a la BD cuántos hay ya aceptados
+        new Thread(() -> {
+            int aceptados = solicitudService.contarAceptadosSync(edicionSeleccionada.getId());
 
-        solicitudService.insert(nuevaSolicitud);
-        Toast.makeText(this, "Solicitud enviada a la Edición #" + edicionSeleccionada.getId(), Toast.LENGTH_LONG).show();
-        finish();
+            if (aceptados >= edicionSeleccionada.getNumeroParticipantesMax()) {
+                runOnUiThread(() -> Toast.makeText(this, "Esta edición ya se ha completado", Toast.LENGTH_SHORT).show());
+            } else {
+                // Si hay hueco, enviamos normal
+                Solicitud nuevaSolicitud = new Solicitud(
+                        edicionSeleccionada.getId(),
+                        currentUserId,
+                        mensaje,
+                        EstadoSolicitud.PENDIENTE
+                );
+                solicitudService.insert(nuevaSolicitud);
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Solicitud enviada", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+            }
+        }).start();
     }
 }

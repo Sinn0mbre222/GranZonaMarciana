@@ -2,6 +2,7 @@ package com.example.granzonamarciana.activity;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,22 +26,23 @@ public class CreateEditionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_edition);
 
+        // Inicialización de servicios y vistas
         service = new EdicionService(this);
         etIn = findViewById(R.id.etStartDate);
         etFi = findViewById(R.id.etEndDate);
         etMa = findViewById(R.id.etMaxParticipants);
         TextView tvBack = findViewById(R.id.tvBack);
+        Button btnCreate = findViewById(R.id.btnCreateEdition);
 
-        // Listeners para abrir los DatePickers
+        // Configurar clics para abrir calendarios
         etIn.setOnClickListener(v -> mostrarCalendario(true));
         etFi.setOnClickListener(v -> mostrarCalendario(false));
 
         // Botón Volver
         tvBack.setOnClickListener(v -> finish());
 
-        findViewById(R.id.btnCreateEdition).setOnClickListener(v -> {
-            validarYCrear();
-        });
+        // Botón Crear
+        btnCreate.setOnClickListener(v -> validarYCrear());
     }
 
     private void mostrarCalendario(boolean esInicio) {
@@ -50,6 +52,7 @@ public class CreateEditionActivity extends AppCompatActivity {
         int day = c.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, y, m, d) -> {
+            // El mes en DatePickerDialog empieza en 0
             LocalDate seleccionada = LocalDate.of(y, m + 1, d);
             if (esInicio) {
                 fechaInicioSel = seleccionada;
@@ -64,14 +67,14 @@ public class CreateEditionActivity extends AppCompatActivity {
     }
 
     private void validarYCrear() {
-        String maxStr = etMa.getText().toString();
+        String maxStr = etMa.getText().toString().trim();
 
         if (fechaInicioSel == null || fechaFinSel == null || maxStr.isEmpty()) {
             Toast.makeText(this, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Validación lógica: El inicio debe ser antes que el fin
+        // Validación lógica de fechas
         if (fechaInicioSel.isAfter(fechaFinSel)) {
             Toast.makeText(this, "La fecha de inicio no puede ser posterior al fin", Toast.LENGTH_SHORT).show();
             return;
@@ -79,11 +82,16 @@ public class CreateEditionActivity extends AppCompatActivity {
 
         try {
             int max = Integer.parseInt(maxStr);
+            if (max <= 0) {
+                Toast.makeText(this, "El cupo debe ser mayor a 0", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             service.insertarEdicion(new Edicion(fechaInicioSel, fechaFinSel, max));
             Toast.makeText(this, "Edición creada con éxito", Toast.LENGTH_SHORT).show();
             finish();
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Número de participantes no válido", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Cupo de participantes no válido", Toast.LENGTH_SHORT).show();
         }
     }
 }

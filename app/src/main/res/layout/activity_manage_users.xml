@@ -1,56 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_dark"
     android:orientation="vertical"
-    android:padding="16dp">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:gravity="center"
-        android:text="Gestión de Usuarios"
-        android:textColor="@color/white"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+    android:padding="24dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:layout_marginBottom="24dp"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GESTIÓN DE USUARIOS"
+            android:textColor="@color/white"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Consulta y filtra el censo de participantes"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@drawable/edittext_background"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:layout_marginBottom="12dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_menu_sort_by_size"
+            app:tint="@color/icon_tint" />
 
         <Spinner
             android:id="@+id/spinnerRoleFilter"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:background="@drawable/edittext_background" />
-
-        <Button
-            android:id="@+id/btnAddUser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/colorPrimary"
-            android:text="+ Nuevo"
-            android:textColor="@color/white" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="12dp"
+            android:background="@null" />
     </LinearLayout>
 
     <EditText
         android:id="@+id/etSearchUser"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="16dp"
+        android:layout_height="52dp"
+        android:layout_marginBottom="20dp"
         android:background="@drawable/edittext_background"
-        android:drawableStart="@drawable/ic_person"
-        android:drawablePadding="10dp"
-        android:hint="Buscar usuario..."
-        android:padding="12dp"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:drawablePadding="12dp"
+        android:hint="Buscar usuario por nombre..."
+        android:paddingStart="16dp"
         android:textColor="@color/white"
-        android:textColorHint="#80FFFFFF" />
+        android:textColorHint="@color/text_hint"
+        android:textSize="15sp" />
 
     <ListView
         android:id="@+id/lvUsers"
@@ -58,7 +74,9 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:divider="@android:color/transparent"
-        android:dividerHeight="8dp" />
+        android:dividerHeight="10dp"
+        android:clipToPadding="false"
+        android:descendantFocusability="blocksDescendants" />
 
     <TextView
         android:id="@+id/tvBack"
@@ -66,11 +84,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="16dp"
-        android:clickable="true"
-        android:focusable="true"
         android:padding="12dp"
-        android:text="← Volver atrás"
+        android:text="← VOLVER ATRÁS"
         android:textColor="@color/text_secondary"
-        android:textSize="14sp" />
+        android:textStyle="bold"
+        android:textSize="13sp" />
 
 </LinearLayout>

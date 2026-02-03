@@ -1,60 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background_dark"
     android:orientation="vertical"
-    android:background="#0B0E14"
-    android:padding="20dp">
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="32dp"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NUEVA EDICIÓN"
+            android:textColor="@color/white"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Configura los límites de la nueva temporada"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="NUEVA EDICIÓN"
-        android:textColor="#00FF41"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="20dp"
-        android:layout_gravity="center_horizontal"/>
+        android:text="Fecha de apertura"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="4dp"/>
 
-    <EditText
-        android:id="@+id/etStartDate"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Fecha Inicio"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#666666"
-        android:focusable="false"
-        android:clickable="true"
-        android:layout_marginBottom="10dp"/>
+        android:layout_height="56dp"
+        android:background="@drawable/edittext_background"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:layout_marginBottom="16dp">
 
-    <EditText
-        android:id="@+id/etEndDate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Fecha Fin"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#666666"
-        android:focusable="false"
-        android:clickable="true"
-        android:layout_marginBottom="10dp"/>
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_menu_today"
+            app:tint="@color/icon_tint" />
 
-    <EditText
-        android:id="@+id/etMaxParticipants"
-        android:layout_width="match_parent"
+        <EditText
+            android:id="@+id/etStartDate"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="12dp"
+            android:background="@null"
+            android:hint="Seleccionar fecha"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_hint"
+            android:focusable="false"
+            android:clickable="true"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Máximo de Participantes"
-        android:inputType="number"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#666666"
-        android:layout_marginBottom="20dp"/>
+        android:text="Fecha de clausura"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="4dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/edittext_background"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_menu_today"
+            app:tint="@color/icon_tint" />
+
+        <EditText
+            android:id="@+id/etEndDate"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="12dp"
+            android:background="@null"
+            android:hint="Seleccionar fecha"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_hint"
+            android:focusable="false"
+            android:clickable="true"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cupo máximo de concursantes"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="4dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/edittext_background"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:layout_marginBottom="32dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_menu_myplaces"
+            app:tint="@color/icon_tint" />
+
+        <EditText
+            android:id="@+id/etMaxParticipants"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="12dp"
+            android:background="@null"
+            android:hint="Ej: 15"
+            android:inputType="number"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_hint"
+            android:textSize="15sp" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/btnCreateEdition"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="CONFIRMAR EDICIÓN"
-        android:backgroundTint="#FF5722"
-        android:textStyle="bold"/>
+        android:layout_height="56dp"
+        android:text="CONFIRMAR Y CREAR"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:cornerRadius="12dp" />
 
     <TextView
         android:id="@+id/tvBack"
@@ -62,9 +157,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:padding="16dp"
-        android:layout_marginTop="10dp"
-        android:text="← Volver atrás"
-        android:textColor="#999999"
+        android:layout_marginTop="16dp"
+        android:text="← VOLVER ATRÁS"
+        android:textColor="@color/text_secondary"
+        android:textStyle="bold"
+        android:textSize="13sp"
         android:clickable="true"
         android:focusable="true" />
 

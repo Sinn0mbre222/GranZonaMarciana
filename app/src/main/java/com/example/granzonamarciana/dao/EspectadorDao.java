@@ -2,6 +2,7 @@ package com.example.granzonamarciana.dao;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
@@ -17,6 +18,8 @@ public interface EspectadorDao {
     @Update
     void update(Espectador espectador);
 
+    @Delete
+    void delete(Espectador espectador);
     @Query("SELECT * FROM espectadores WHERE id = :id")
     LiveData<Espectador> findById(int id);
 

@@ -21,8 +21,11 @@ public class GalaAdapter extends BaseAdapter {
         this.context = context;
     }
 
-    public void setGalas(List<Gala> galas) {
-        this.galas = galas;
+    public void setGalas(List<Gala> nuevasGalas) {
+        this.galas.clear();
+        if (nuevasGalas != null) {
+            this.galas.addAll(nuevasGalas);
+        }
         notifyDataSetChanged();
     }
 

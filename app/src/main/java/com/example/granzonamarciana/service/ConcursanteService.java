@@ -44,4 +44,10 @@ public class ConcursanteService {
     public LiveData<List<Concursante>> obtenerTodos() {
         return concursanteDao.findAll(); // Ya existe en el DAO
     }
+
+    public void eliminar(Concursante c) {
+        new Thread(() -> {
+            concursanteDao.delete(c); // Asegúrate de tener @Delete en tu DAO
+        }).start();
+    }
 }

@@ -40,7 +40,8 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:background="@drawable/edittext_background"
-            android:padding="10dp" />
+            android:gravity="center_vertical"
+            android:spinnerMode="dropdown" />
 
     </LinearLayout>
 

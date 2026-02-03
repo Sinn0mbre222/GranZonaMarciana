@@ -7,22 +7,26 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import com.example.granzonamarciana.R;
-import com.example.granzonamarciana.entity.Solicitud;
+import com.example.granzonamarciana.entity.pojo.SolicitudConConcursante;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SolicitudAdapter extends BaseAdapter {
     private Context context;
-    private List<Solicitud> solicitudes = new ArrayList<>();
+    // CAMBIO: Ahora usamos el POJO para tener acceso a los datos del concursante
+    private List<SolicitudConConcursante> solicitudes = new ArrayList<>();
 
     public SolicitudAdapter(Context context) {
         this.context = context;
     }
 
-    // Mertodo para actualizar los datos desde la Activity
-    public void setSolicitudes(List<Solicitud> solicitudes) {
-        this.solicitudes = solicitudes;
-        notifyDataSetChanged(); // Esto refresca la lista visualmente
+    // Método corregido para aceptar la lista del POJO
+    public void setSolicitudes(List<SolicitudConConcursante> nuevasSolicitudes) {
+        this.solicitudes.clear();
+        if (nuevasSolicitudes != null) {
+            this.solicitudes.addAll(nuevasSolicitudes);
+        }
+        notifyDataSetChanged();
     }
 
     @Override
@@ -40,27 +44,31 @@ public class SolicitudAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(context).inflate(R.layout.item_solicitud, parent, false);
         }
 
-        Solicitud actual = solicitudes.get(position);
+        // Obtenemos el objeto compuesto (Solicitud + Concursante)
+        SolicitudConConcursante solicitudConConcursante = solicitudes.get(position);
 
-        TextView tvEdition = convertView.findViewById(R.id.tvEditionLabel);
+        TextView tvNombre = convertView.findViewById(R.id.tvEditionLabel); // Reutilizamos para el nombre
         TextView tvMsg = convertView.findViewById(R.id.tvMessagePreview);
         TextView tvStatus = convertView.findViewById(R.id.tvStatus);
 
-        // Asegúrate de que los IDs (tvEditionLabel, etc.) existan en item_solicitud.xml
-        if (actual != null) {
-            tvEdition.setText("Edición #" + actual.getEditionId());
-            tvMsg.setText(actual.getMensaje());
-            tvStatus.setText(actual.getEstado().toString());
+        if (solicitudConConcursante != null && solicitudConConcursante.solicitud != null) {
+            if (solicitudConConcursante.concursante != null) {
+                tvNombre.setText(solicitudConConcursante.concursante.getNombre() + " " + solicitudConConcursante.concursante.getPrimerApellido());
+            } else {
+                tvNombre.setText("Edición #" + solicitudConConcursante.solicitud.getEditionId());
+            }
 
-            // Colores según estado para mejor feedback visual
-            switch (actual.getEstado()) {
+            tvMsg.setText(solicitudConConcursante.solicitud.getMensaje());
+            tvStatus.setText(solicitudConConcursante.solicitud.getEstado().toString());
+
+            // Colores según estado
+            switch (solicitudConConcursante.solicitud.getEstado()) {
                 case ACEPTADA:
                     tvStatus.setTextColor(context.getColor(android.R.color.holo_green_dark));
                     break;
                 case RECHAZADA:
                     tvStatus.setTextColor(context.getColor(android.R.color.holo_red_dark));
                     break;
-                case PENDIENTE:
                 default:
                     tvStatus.setTextColor(context.getColor(android.R.color.darker_gray));
                     break;

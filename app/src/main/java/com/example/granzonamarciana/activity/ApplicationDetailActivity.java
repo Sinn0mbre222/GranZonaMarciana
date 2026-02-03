@@ -5,7 +5,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.granzonamarciana.R;
-import com.example.granzonamarciana.entity.Solicitud;
+import com.example.granzonamarciana.entity.pojo.SolicitudConConcursante;
 import com.example.granzonamarciana.service.SolicitudService;
 
 public class ApplicationDetailActivity extends AppCompatActivity {
@@ -35,22 +35,24 @@ public class ApplicationDetailActivity extends AppCompatActivity {
     }
 
     private void cargarDatosSolicitud(int id) {
-        solicitudService.getAllSolicitudes().observe(this, solicitudes -> {
-            for (Solicitud s : solicitudes) {
-                if (s.getId() == id) {
-                    tvDetailEditionTitle.setText("Edición #" + s.getEditionId());
-                    tvDetailMessage.setText(s.getMensaje());
-                    tvDetailStatus.setText(s.getEstado().toString());
+        // Observamos directamente la solicitud específica
+        solicitudService.getSolicitudById(id).observe(this, wrapper -> {
+            if (wrapper != null && wrapper.solicitud != null) {
+                // Seteamos los datos accediendo al objeto solicitud dentro del POJO
+                tvDetailEditionTitle.setText("Edición #" + wrapper.solicitud.getEditionId());
+                tvDetailMessage.setText(wrapper.solicitud.getMensaje());
+                tvDetailStatus.setText(wrapper.solicitud.getEstado().toString());
 
-                    switch (s.getEstado()) {
-                        case ACEPTADA:
-                            tvDetailStatus.setTextColor(getColor(android.R.color.holo_green_light));
-                            break;
-                        case RECHAZADA:
-                            tvDetailStatus.setTextColor(getColor(android.R.color.holo_red_light));
-                            break;
-                    }
-                    break;
+                switch (wrapper.solicitud.getEstado()) {
+                    case ACEPTADA:
+                        tvDetailStatus.setTextColor(getColor(android.R.color.holo_green_light));
+                        break;
+                    case RECHAZADA:
+                        tvDetailStatus.setTextColor(getColor(android.R.color.holo_red_light));
+                        break;
+                    default:
+                        tvDetailStatus.setTextColor(getColor(android.R.color.darker_gray));
+                        break;
                 }
             }
         });

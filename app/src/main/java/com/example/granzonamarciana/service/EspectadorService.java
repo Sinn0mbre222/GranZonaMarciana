@@ -25,6 +25,12 @@ public class EspectadorService {
         new Thread(() -> espectadorDao.update(espectador)).start();
     }
 
+    public void eliminar(Espectador e) {
+        new Thread(() -> {
+            espectadorDao.delete(e); // Asegúrate de tener @Delete en tu DAO
+        }).start();
+    }
+
     public LiveData<Espectador> obtenerPorId(int id) {
         return espectadorDao.findById(id);
     }

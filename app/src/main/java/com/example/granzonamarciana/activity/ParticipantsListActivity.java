@@ -27,7 +27,6 @@ public class ParticipantsListActivity extends AppCompatActivity {
     private ListView lvParticipantes;
     private EditText etBuscar;
     private ImageButton btnBuscar;
-    private LinearLayout layoutFilterGala; // Referencia al layout del spinner de galas
 
     private EdicionService edicionService;
     private ConcursanteService concursanteService;
@@ -38,7 +37,6 @@ public class ParticipantsListActivity extends AppCompatActivity {
     private List<Edicion> listaEdiciones = new ArrayList<>();
     private List<Gala> listaGalas = new ArrayList<>();
 
-    // Variable para saber quién está usando la app
     private String userRole;
 
     @Override
@@ -46,21 +44,19 @@ public class ParticipantsListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_participants_list);
 
-        // 1. OBTENER ROL DEL USUARIO
         SharedPreferences prefs = getSharedPreferences("granZMUser", Context.MODE_PRIVATE);
         userRole = prefs.getString("rol", "INVITADO");
 
         initViews();
 
-        // Inicializar servicios
         edicionService = new EdicionService(this);
         concursanteService = new ConcursanteService(this);
         galaService = new GalaService(getApplication());
 
+        // Cargar datos
         cargarEdiciones();
 
-        // Buscador
-        btnBuscar.setOnClickListener(v -> filtrarListaLocal(etBuscar.getText().toString()));
+        // Listeners
         etBuscar.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -69,54 +65,10 @@ public class ParticipantsListActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        // 3. CONFIGURAR CLICK CON LÓGICA DE ROLES
         lvParticipantes.setOnItemClickListener((parent, view, position, id) -> {
             Concursante seleccionado = (Concursante) parent.getAdapter().getItem(position);
-
             if (seleccionado != null) {
-                Intent intent;
-
-                if ("ESPECTADOR".equals(userRole)) {
-                    // CASO A: Espectador -> Va a VOTAR
-
-                    // Validar selección de Gala
-                    int galaPos = spinnerGalas.getSelectedItemPosition();
-                    if (listaGalas.isEmpty() || galaPos < 0) {
-                        Toast.makeText(this, "Selecciona una gala válida para votar", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    Gala galaSeleccionada = listaGalas.get(galaPos);
-
-                    // Validar selección de Edición
-                    int edicionPos = spinnerEdiciones.getSelectedItemPosition();
-                    if (listaEdiciones.isEmpty() || edicionPos < 0) {
-                        return; // Seguridad extra
-                    }
-                    int idEdicionActual = listaEdiciones.get(edicionPos).getId();
-
-                    Log.d("NAVEGACION", "Usuario ESPECTADOR -> Yendo a RateParticipantActivity");
-                    intent = new Intent(ParticipantsListActivity.this, RateParticipantActivity.class);
-
-                    // Extras para pre-rellenar la pantalla de votación
-                    intent.putExtra("CONCURSANTE_NOMBRE", seleccionado.getNombre() + " " + seleccionado.getPrimerApellido());
-                    intent.putExtra("CONCURSANTE_FOTO", seleccionado.getImagenUrl());
-                    intent.putExtra("GALA_EDICION_ID", idEdicionActual); // Ahora sí tenemos el ID correcto
-                    intent.putExtra("GALA_ID", galaSeleccionada.getId());
-
-                } else {
-                    // CASO B: Invitado/Admin/Concursante -> Va a PERFIL PÚBLICO
-                    Log.d("NAVEGACION", "Usuario " + userRole + " -> Yendo a ParticipantPublicActivity");
-                    intent = new Intent(ParticipantsListActivity.this, ParticipantPublicActivity.class);
-                }
-
-                // ID del concursante (Necesario siempre)
-                intent.putExtra("CONCURSANTE_ID", seleccionado.getId());
-
-                startActivity(intent);
-
-            } else {
-                Log.e("NAVEGACION", "Error: Concursante nulo");
+                navegarSegunRol(seleccionado);
             }
         });
 
@@ -129,7 +81,6 @@ public class ParticipantsListActivity extends AppCompatActivity {
         lvParticipantes = findViewById(R.id.lvParticipantes);
         etBuscar = findViewById(R.id.etBuscarParticipante);
         btnBuscar = findViewById(R.id.btnEjecutarBusqueda);
-        layoutFilterGala = findViewById(R.id.layoutFilterGala); // Asegúrate de tener este ID en el XML
     }
 
     private void cargarEdiciones() {
@@ -139,7 +90,11 @@ public class ParticipantsListActivity extends AppCompatActivity {
                 List<String> labels = new ArrayList<>();
                 for (Edicion e : ediciones) labels.add("Edición " + e.getId());
 
-                ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, R.layout.spinner_rol_item, labels);
+                ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+                        ParticipantsListActivity.this,
+                        R.layout.spinner_rol_item,
+                        labels
+                );
                 spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinnerEdiciones.setAdapter(spinnerAdapter);
 
@@ -147,8 +102,6 @@ public class ParticipantsListActivity extends AppCompatActivity {
                     @Override
                     public void onItemSelected(AdapterView<?> p, View v, int pos, long id) {
                         int idEdicionSeleccionada = listaEdiciones.get(pos).getId();
-
-                        // Al cambiar de edición, cargamos Participantes Y Galas
                         cargarParticipantes(idEdicionSeleccionada);
                         cargarGalas(idEdicionSeleccionada);
                     }
@@ -163,19 +116,20 @@ public class ParticipantsListActivity extends AppCompatActivity {
             listaGalas = (galas != null) ? galas : new ArrayList<>();
             List<String> labels = new ArrayList<>();
 
-            for (Gala g : listaGalas) {
-                labels.add("Gala: " + g.getFecha());
-            }
-
-            if (labels.isEmpty()) {
+            if (listaGalas.isEmpty()) {
                 labels.add("Sin galas disponibles");
-                // Opcional: Deshabilitar spinner si no hay galas
                 spinnerGalas.setEnabled(false);
             } else {
+                for (Gala g : listaGalas) labels.add("Gala: " + g.getFecha());
                 spinnerGalas.setEnabled(true);
             }
 
-            ArrayAdapter<String> adapterGalas = new ArrayAdapter<>(this, R.layout.spinner_rol_item, labels);
+            // CORRECCIÓN: Usar ParticipantsListActivity.this
+            ArrayAdapter<String> adapterGalas = new ArrayAdapter<>(
+                    ParticipantsListActivity.this,
+                    R.layout.spinner_rol_item,
+                    labels
+            );
             adapterGalas.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerGalas.setAdapter(adapterGalas);
         });
@@ -190,6 +144,33 @@ public class ParticipantsListActivity extends AppCompatActivity {
                 filtrarListaLocal(etBuscar.getText().toString());
             }
         });
+    }
+
+    private void navegarSegunRol(Concursante seleccionado) {
+        Intent intent;
+        if ("ESPECTADOR".equals(userRole)) {
+            int galaPos = spinnerGalas.getSelectedItemPosition();
+            if (listaGalas.isEmpty() || galaPos < 0) {
+                Toast.makeText(this, "Selecciona una gala válida", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Gala galaSeleccionada = listaGalas.get(galaPos);
+            // Aseguramos obtener el ID de edición correcto del spinner
+            int edicionPos = spinnerEdiciones.getSelectedItemPosition();
+            if(edicionPos < 0) return;
+            int idEdicionActual = listaEdiciones.get(edicionPos).getId();
+
+            intent = new Intent(this, RateParticipantActivity.class);
+            intent.putExtra("CONCURSANTE_NOMBRE", seleccionado.getNombre() + " " + seleccionado.getPrimerApellido());
+            intent.putExtra("CONCURSANTE_FOTO", seleccionado.getImagenUrl());
+            intent.putExtra("GALA_EDICION_ID", idEdicionActual);
+            intent.putExtra("GALA_ID", galaSeleccionada.getId());
+        } else {
+            intent = new Intent(this, ParticipantPublicActivity.class);
+        }
+        intent.putExtra("CONCURSANTE_ID", seleccionado.getId());
+        startActivity(intent);
     }
 
     private void filtrarListaLocal(String texto) {

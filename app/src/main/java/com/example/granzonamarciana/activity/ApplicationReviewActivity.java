@@ -6,7 +6,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.granzonamarciana.R;
-import com.example.granzonamarciana.entity.Solicitud;
+import com.example.granzonamarciana.entity.pojo.SolicitudConConcursante;
 import com.example.granzonamarciana.service.EdicionService;
 import com.example.granzonamarciana.service.SolicitudService;
 
@@ -14,7 +14,8 @@ public class ApplicationReviewActivity extends AppCompatActivity {
 
     private TextView tvApplicantName, tvMotivationDetail;
     private SolicitudService solicitudService;
-    private Solicitud solicitudActual;
+    // CAMBIO: Ahora manejamos el POJO para tener acceso a los datos del concursante
+    private SolicitudConConcursante wrapperActual;
     private EdicionService edicionService;
 
     @Override
@@ -36,48 +37,51 @@ public class ApplicationReviewActivity extends AppCompatActivity {
 
         if (solicitudId != -1) {
             cargarDatos(solicitudId);
-        }else {
+        } else {
             Toast.makeText(this, "Error al cargar la solicitud", Toast.LENGTH_SHORT).show();
             finish();
         }
 
         // Configurar botones
         btnAccept.setOnClickListener(v -> {
-            if (solicitudActual != null) {
+            if (wrapperActual != null && wrapperActual.solicitud != null) {
                 // Buscamos la edición para saber su aforo máximo real
-                edicionService.listarEdicionePorid(solicitudActual.getEditionId()).observe(this, edicion -> {
+                edicionService.listarEdicionePorid(wrapperActual.solicitud.getEditionId()).observe(this, edicion -> {
                     if (edicion != null) {
                         // Llamamos al service con el aforo real de la edición
-                        solicitudService.aceptarSolicitud(solicitudActual, edicion.getNumeroParticipantesMax());
-                        Toast.makeText(this, "Solicitud procesada correctamente", Toast.LENGTH_SHORT).show();
+                        solicitudService.aceptarSolicitud(wrapperActual.solicitud, edicion.getNumeroParticipantesMax());
+                        Toast.makeText(this, "Solicitud Aceptada", Toast.LENGTH_SHORT).show();
                         finish();
                     } else {
-                        Toast.makeText(this, "No se encontró la edición", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "No se encontró la edición vinculada", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
 
         btnReject.setOnClickListener(v -> {
-            if (solicitudActual != null) {
-                solicitudService.rechazarSolicitud(solicitudActual);
+            if (wrapperActual != null && wrapperActual.solicitud != null) {
+                solicitudService.rechazarSolicitud(wrapperActual.solicitud);
                 Toast.makeText(this, "Solicitud Rechazada", Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
+
+        findViewById(R.id.tvBack).setOnClickListener(v -> finish());
     }
 
     private void cargarDatos(int id) {
-        solicitudService.getAllSolicitudes().observe(this, solicitudes -> {
-            if (solicitudes != null) {
-                for (Solicitud s : solicitudes) {
-                    if (s.getId() == id) {
-                        solicitudActual = s;
-                        tvApplicantName.setText("Aspirante ID: " + s.getConcursanteId());
-                        tvMotivationDetail.setText(s.getMensaje());
-                        break;
-                    }
+        solicitudService.getSolicitudById(id).observe(this, wrapper -> {
+            if (wrapper != null && wrapper.solicitud != null) {
+                wrapperActual = wrapper;
+
+                if (wrapper.concursante != null) {
+                    tvApplicantName.setText(wrapper.concursante.getNombre() + " " + wrapper.concursante.getPrimerApellido());
+                } else {
+                    tvApplicantName.setText("Aspirante ID: " + wrapper.solicitud.getConcursanteId());
                 }
+
+                tvMotivationDetail.setText(wrapper.solicitud.getMensaje());
             }
         });
     }

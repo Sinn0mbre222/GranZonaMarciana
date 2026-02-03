@@ -51,4 +51,18 @@ public interface SolicitudDao {
     @Query("SELECT editionId FROM solicitudes WHERE concursanteId = :contestantId")
     List<Integer> getEdicionesSolicitadasPorUsuario(int contestantId);
 
+    @Transaction
+    @Query("SELECT * FROM solicitudes WHERE editionId = :edicionId")
+    LiveData<List<SolicitudConConcursante>> findByEdicion(int edicionId);
+
+    @Transaction
+    @Query("SELECT * FROM solicitudes")
+    LiveData<List<SolicitudConConcursante>> findAllConDetalle();
+    @Transaction
+    @Query("SELECT * FROM solicitudes WHERE concursanteId = :contestantId")
+    LiveData<List<SolicitudConConcursante>> findByContestantConDetalle(int contestantId);
+
+    @Transaction
+    @Query("SELECT * FROM solicitudes WHERE id = :id")
+    LiveData<SolicitudConConcursante> findByIdConDetalle(int id);
 }

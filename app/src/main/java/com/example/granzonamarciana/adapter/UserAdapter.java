@@ -1,35 +1,36 @@
 package com.example.granzonamarciana.adapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.example.granzonamarciana.R;
-import com.example.granzonamarciana.activity.ProfileActivity; // Importar ProfileActivity
 import com.example.granzonamarciana.entity.DomainEntity;
 import com.example.granzonamarciana.entity.Espectador;
 import com.example.granzonamarciana.entity.Concursante;
-
+import com.squareup.picasso.Picasso;
 import java.util.List;
 
 public class UserAdapter extends ArrayAdapter<DomainEntity> {
 
     private Context context;
     private int resource;
+    private OnUserDeleteListener deleteListener;
 
-    public UserAdapter(@NonNull Context context, int resource, @NonNull List<DomainEntity> objects) {
+    public interface OnUserDeleteListener {
+        void onDelete(DomainEntity usuario);
+    }
+
+    public UserAdapter(@NonNull Context context, int resource, @NonNull List<DomainEntity> objects, OnUserDeleteListener listener) {
         super(context, resource, objects);
         this.context = context;
         this.resource = resource;
+        this.deleteListener = listener;
     }
 
     @NonNull
@@ -44,47 +45,42 @@ public class UserAdapter extends ArrayAdapter<DomainEntity> {
         TextView tvUsername = convertView.findViewById(R.id.tvUsername);
         TextView tvRole = convertView.findViewById(R.id.tvUserRole);
         ImageView ivDelete = convertView.findViewById(R.id.ivDeleteUser);
-        ImageView ivIcon = convertView.findViewById(R.id.ivUserIcon);
+        ImageView ivPhoto = convertView.findViewById(R.id.ivUserIcon);
 
         if (usuario != null) {
             String nombre = "";
             String rol = "";
-            int userId = -1;
-            String userRoleStr = "";
+            String imgUrl = "";
 
             if (usuario instanceof Espectador) {
-                nombre = ((Espectador) usuario).getNombre();
+                Espectador e = (Espectador) usuario;
+                nombre = e.getNombre() + " " + e.getPrimerApellido();
                 rol = "ESPECTADOR";
-                userRoleStr = "ESPECTADOR";
-                userId = ((Espectador) usuario).getId();
-                ivIcon.setImageResource(R.drawable.ic_person);
+                imgUrl = e.getImagenUrl();
             } else if (usuario instanceof Concursante) {
-                nombre = ((Concursante) usuario).getNombre();
+                Concursante c = (Concursante) usuario;
+                nombre = c.getNombre() + " " + c.getPrimerApellido();
                 rol = "CONCURSANTE";
-                userRoleStr = "CONCURSANTE";
-                userId = ((Concursante) usuario).getId();
-                ivIcon.setImageResource(R.drawable.ic_launcher_foreground);
+                imgUrl = c.getImagenUrl();
             }
 
             tvUsername.setText(nombre);
             tvRole.setText(rol);
 
-            // --- CLICK EN EL ELEMENTO PARA IR AL PERFIL ---
-            // Guardamos variables finales para usar en la lambda
-            final int finalUserId = userId;
-            final String finalUserRoleStr = userRoleStr;
+            if (imgUrl != null && imgUrl.startsWith("http")) {
+                Picasso.get()
+                        .load(imgUrl)
+                        .placeholder(R.drawable.ic_default_avatar)
+                        .error(R.drawable.ic_default_avatar)
+                        .into(ivPhoto);
+            } else {
+                ivPhoto.setImageResource(R.drawable.ic_default_avatar);
+            }
 
-            convertView.setOnClickListener(v -> {
-                Intent intent = new Intent(context, ProfileActivity.class);
-                intent.putExtra("TARGET_USER_ID", finalUserId);
-                intent.putExtra("TARGET_USER_ROLE", finalUserRoleStr);
-                context.startActivity(intent);
-            });
-
-            // Botón Eliminar (Independiente del click en el perfil)
             ivDelete.setOnClickListener(v -> {
-                Toast.makeText(context, "Borrar: " + finalUserId, Toast.LENGTH_SHORT).show();
-
+                if (deleteListener != null) {
+                    deleteListener.onDelete(usuario);
+                }
             });
         }
 

@@ -42,6 +42,7 @@ public class ParticipantPublicActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_participant_public);
 
+        // 1. Recibir ID del concursante desde la lista anterior
         concursanteId = getIntent().getIntExtra("CONCURSANTE_ID", -1);
         if (concursanteId == -1) {
             Toast.makeText(this, "Error al cargar concursante", Toast.LENGTH_SHORT).show();
@@ -49,18 +50,17 @@ public class ParticipantPublicActivity extends AppCompatActivity {
             return;
         }
 
+        // 2. Inicializar
         initViews();
         concursanteService = new ConcursanteService(this);
         puntuacionService = new PuntuacionService(this);
 
+        // 3. Cargar datos
         cargarDatosConcursante();
         cargarHistorial();
 
-        // Configurar visibilidad del botón según rol
+        // 4. Mostrar botón de votar SOLO si eres Espectador
         configurarBotonPuntuar();
-
-        // Botón volver
-        findViewById(R.id.tvBack).setOnClickListener(v -> finish());
     }
 
     private void initViews() {
@@ -75,19 +75,26 @@ public class ParticipantPublicActivity extends AppCompatActivity {
     private void cargarDatosConcursante() {
         concursanteService.obtenerPorId(concursanteId).observe(this, concursante -> {
             if (concursante != null) {
-                // Usamos getPrimerApellido corregido
+                // Usamos el método corregido getPrimerApellido
                 String nombreCompleto = concursante.getNombre() + " " + concursante.getPrimerApellido();
                 tvNombre.setText(nombreCompleto);
+
+                // Imagen por defecto
                 ivFoto.setImageResource(R.drawable.ic_default_avatar);
             }
         });
     }
 
     private void cargarHistorial() {
+        // Obtenemos las puntuaciones recibidas por este concursante
+        // SI ESTO SALE EN ROJO, MIRA LA NOTA DE ABAJO
         puntuacionService.obtenerHistorialConcursante(concursanteId).observe(this, puntuaciones -> {
             if (puntuaciones != null) {
+                // Rellenar lista
                 adapter = new HistoryAdapter(this, R.layout.item_history, puntuaciones);
                 lvHistory.setAdapter(adapter);
+
+                // Calcular Estadísticas (Media y Total)
                 actualizarEstadisticas(puntuaciones);
             }
         });
@@ -98,7 +105,9 @@ public class ParticipantPublicActivity extends AppCompatActivity {
 
         if (!puntuaciones.isEmpty()) {
             double suma = 0;
-            for (Puntuacion p : puntuaciones) suma += p.getValor();
+            for (Puntuacion p : puntuaciones) {
+                suma += p.getValor();
+            }
             double media = suma / puntuaciones.size();
             tvAvgScore.setText(String.format(Locale.getDefault(), "Media: %.1f", media));
         } else {
@@ -107,23 +116,20 @@ public class ParticipantPublicActivity extends AppCompatActivity {
     }
 
     private void configurarBotonPuntuar() {
-        // CORRECCIÓN: Usamos "granZMUser" que es lo que usa LoginActivity ahora
-        SharedPreferences prefs = getSharedPreferences("granZMUser", Context.MODE_PRIVATE);
+        // Leemos el rol del usuario desde SharedPreferences (como en el Login)
+        SharedPreferences prefs = getSharedPreferences("GranZonaMarcianaPrefs", Context.MODE_PRIVATE);
+        String rolStr = prefs.getString("USER_ROLE", null);
 
-        // LoginActivity guarda el rol con la clave "rol"
-        String rolStr = prefs.getString("rol", null);
-
-        // Solo mostramos botón si es ESPECTADOR
-        if (rolStr != null && rolStr.equals(TipoRol.ESPECTADOR.name())) {
+        if (rolStr != null && TipoRol.valueOf(rolStr) == TipoRol.ESPECTADOR) {
             btnRateNow.setVisibility(View.VISIBLE);
             btnRateNow.setOnClickListener(v -> {
+                // Navegar a la pantalla de votación (RateParticipantActivity)
                 Intent intent = new Intent(ParticipantPublicActivity.this, RateParticipantActivity.class);
                 intent.putExtra("CONCURSANTE_ID", concursanteId);
                 intent.putExtra("CONCURSANTE_NOMBRE", tvNombre.getText().toString());
                 startActivity(intent);
             });
         } else {
-            // Invitados, Admins y Concursantes NO ven el botón
             btnRateNow.setVisibility(View.GONE);
         }
     }

@@ -149,11 +149,9 @@ public class LoginActivity extends AppCompatActivity {
         editor.putInt("id", id);
         editor.putString("username", username);
         editor.putString("rol", rol.name());
-        editor.commit();
+        editor.apply();
 
         Toast.makeText(this, "¡Bienvenido " + username + "!", Toast.LENGTH_SHORT).show();
-        // Llamamos a la redirección pasando el rol directamente para no tener que leerlo de nuevo
-        ejecutarRedireccionInmediata(rol.name());
     }
 
     private void comprobarSiEstaLogueado() {
@@ -187,17 +185,6 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
-    private void ejecutarRedireccionInmediata(String rol) {
-        Intent intent;
-        switch (rol) {
-            case "ADMINISTRADOR": intent = new Intent(this, MenuAdminActivity.class); break;
-            case "CONCURSANTE": intent = new Intent(this, MenuConcursanteActivity.class); break;
-            case "ESPECTADOR": intent = new Intent(this, MenuEspectadorActivity.class); break;
-            default: intent = new Intent(this, MainMenuActivity.class); break;
-        }
-        startActivity(intent);
-        finish();
-    }
     private void populateBD() {
         PopulateBD populateBD = new PopulateBD(this);
         populateBD.deleteBD(this);

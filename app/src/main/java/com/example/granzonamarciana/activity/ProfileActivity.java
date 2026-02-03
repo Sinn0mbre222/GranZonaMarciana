@@ -42,7 +42,6 @@ public class ProfileActivity extends AppCompatActivity {
 
     private String userRole;
     private int userId;
-    private boolean isReadOnly = false; // Variable para controlar el modo
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,37 +54,20 @@ public class ProfileActivity extends AppCompatActivity {
         concursanteService = new ConcursanteService(this);
         espectadorService = new EspectadorService(this);
 
-        // 1. COMPROBAR SI VIENE POR INTENT (Modo Lectura / Admin / Invitado)
-        int intentId = getIntent().getIntExtra("TARGET_USER_ID", -1);
-        String intentRole = getIntent().getStringExtra("TARGET_USER_ROLE");
-
-        if (intentId != -1 && intentRole != null) {
-            // Caso: Viendo perfil de otro usuario
-            userId = intentId;
-            userRole = intentRole;
-            isReadOnly = true;
-            activarModoLectura();
-        } else {
-            // 2. Si no hay Intent, cargamos mi propia sesión (Modo Edición)
-            SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
-            userId = prefs.getInt("id", -1);
-            userRole = prefs.getString("rol", "");
-            isReadOnly = false;
-        }
+        SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
+        userId = prefs.getInt("id", -1);
+        userRole = prefs.getString("rol", "");
 
         if (userId == -1) {
-            Toast.makeText(this, "Usuario no encontrado o sesión no válida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Sesión no válida", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
         loadUserData();
 
-        // Solo activar listeners de guardado si NO es solo lectura
-        if (!isReadOnly) {
-            btnGuardar.setOnClickListener(v -> saveChanges());
-            btnCambiarPass.setOnClickListener(v -> showChangePasswordDialog());
-        }
+        btnGuardar.setOnClickListener(v -> saveChanges());
+        btnCambiarPass.setOnClickListener(v -> showChangePasswordDialog());
     }
 
     private void initViews() {
@@ -101,39 +83,13 @@ public class ProfileActivity extends AppCompatActivity {
         tvJoinDate = findViewById(R.id.tvJoinDate);
         ivProfileImage = findViewById(R.id.ivProfile);
 
+        // Ajuste de IDs según tu XML corregido
         btnGuardar = findViewById(R.id.btnGuardar);
         btnCambiarPass = findViewById(R.id.btnCambiarPass);
 
         Button btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
-        }
-    }
-
-    private void activarModoLectura() {
-        // Ocultar botones de edición
-        if (btnGuardar != null) btnGuardar.setVisibility(View.GONE);
-        if (btnCambiarPass != null) btnCambiarPass.setVisibility(View.GONE);
-
-        // Deshabilitar campos de texto (visual solo)
-        deshabilitarEditText(etNombre);
-        deshabilitarEditText(etApellido1);
-        deshabilitarEditText(etApellido2);
-        deshabilitarEditText(etEmail);
-        deshabilitarEditText(etTelefono);
-        deshabilitarEditText(etImageUrl);
-
-        // Opcional: Cambiar título de la pantalla si lo tuvieras
-    }
-
-    private void deshabilitarEditText(EditText et) {
-        if (et != null) {
-            et.setFocusable(false);
-            et.setClickable(false);
-            et.setCursorVisible(false);
-            et.setKeyListener(null);
-            // Cambiar color para indicar que está deshabilitado visualmente si quieres
-            // et.setTextColor(getResources().getColor(R.color.text_disabled));
         }
     }
 
@@ -145,7 +101,7 @@ public class ProfileActivity extends AppCompatActivity {
                         currentAdmin = admin;
                         tvUsername.setText(admin.getUsername());
                         tvUserRole.setText("Administrador");
-                        tvJoinDate.setText(String.valueOf(admin.getFechaRegistro()));
+                        tvJoinDate.setText(admin.getFechaRegistro().toString());
                         populateFields(admin.getNombre(), admin.getPrimerApellido(), admin.getSegundoApellido(), admin.getEmail(), admin.getTelefono(), admin.getImagenUrl());
                     }
                 });
@@ -157,7 +113,7 @@ public class ProfileActivity extends AppCompatActivity {
                         currentConcursante = concu;
                         tvUsername.setText(concu.getUsername());
                         tvUserRole.setText("Concursante");
-                        tvJoinDate.setText(String.valueOf(concu.getFechaRegistro()));
+                        tvJoinDate.setText(concu.getFechaRegistro().toString());
                         populateFields(concu.getNombre(), concu.getPrimerApellido(), concu.getSegundoApellido(), concu.getEmail(), concu.getTelefono(), concu.getImagenUrl());
                     }
                 });
@@ -169,7 +125,7 @@ public class ProfileActivity extends AppCompatActivity {
                         currentEspectador = espec;
                         tvUsername.setText(espec.getUsername());
                         tvUserRole.setText("Espectador");
-                        tvJoinDate.setText(String.valueOf(espec.getFechaRegistro()));
+                        tvJoinDate.setText(espec.getFechaRegistro().toString());
                         populateFields(espec.getNombre(), espec.getPrimerApellido(), espec.getSegundoApellido(), espec.getEmail(), espec.getTelefono(), espec.getImagenUrl());
                     }
                 });
@@ -185,23 +141,21 @@ public class ProfileActivity extends AppCompatActivity {
         etTelefono.setText(tlf);
         etImageUrl.setText(imgUrl);
 
-        // Lógica de imagen simplificada:
-        // Solo intentamos cargar si parece una URL válida (empieza por http/https)
-        if (imgUrl != null && !imgUrl.isEmpty() && (imgUrl.startsWith("http") || imgUrl.startsWith("https"))) {
+        if (imgUrl == null || imgUrl.isEmpty() || imgUrl.equals("ic_default_avatar")) {
+            ivProfileImage.setImageResource(R.drawable.ic_default_avatar);
+        } else if (imgUrl.startsWith("http")) {
             Picasso.get()
                     .load(imgUrl)
-                    .placeholder(R.drawable.ic_default_avatar) // Se ve mientras carga
-                    .error(R.drawable.ic_default_avatar)       // Se ve si el enlace está roto o falla
+                    .placeholder(R.drawable.ic_default_avatar)
+                    .error(R.drawable.ic_granzonamarciana)
                     .into(ivProfileImage);
         } else {
-            // Si es nulo, vacío o texto normal, ponemos el defecto directamente
-            ivProfileImage.setImageResource(R.drawable.ic_default_avatar);
+            int resId = getResources().getIdentifier(imgUrl, "drawable", getPackageName());
+            ivProfileImage.setImageResource(resId != 0 ? resId : R.drawable.ic_default_avatar);
         }
     }
 
     private void saveChanges() {
-        if (isReadOnly) return; // Seguridad extra
-
         String nombre = etNombre.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String url = etImageUrl.getText().toString().trim();
@@ -256,8 +210,6 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void showChangePasswordDialog() {
-        if (isReadOnly) return;
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Seguridad");
 

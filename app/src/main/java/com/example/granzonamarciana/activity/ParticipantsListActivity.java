@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +22,7 @@ public class ParticipantsListActivity extends AppCompatActivity {
     private Spinner spinnerEdiciones;
     private ListView lvParticipantes;
     private EditText etBuscar;
+    private ImageButton btnBuscar;
     private EdicionService edicionService;
     private ConcursanteService concursanteService;
     private ParticipantAdapter adapter;
@@ -35,10 +37,10 @@ public class ParticipantsListActivity extends AppCompatActivity {
         initViews();
         edicionService = new EdicionService(this);
         concursanteService = new ConcursanteService(this);
-
         cargarEdiciones();
 
-        // Buscador en tiempo real
+        // 1. Buscador
+        btnBuscar.setOnClickListener(v -> filtrarListaLocal(etBuscar.getText().toString()));
         etBuscar.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -47,13 +49,24 @@ public class ParticipantsListActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        // Al pulsar: siempre al Perfil Público
+        // 2. CONFIGURAR CLICK (Con Logs de diagnóstico)
         lvParticipantes.setOnItemClickListener((parent, view, position, id) -> {
-            Concursante seleccionado = (Concursante) adapter.getItem(position);
+            Log.d("DEBUG_VOTAR", "¡CLICK DETECTADO! Posición: " + position);
+
+            // IMPORTANTE: Obtener del adaptador directamente
+            Concursante seleccionado = (Concursante) parent.getAdapter().getItem(position);
+
             if (seleccionado != null) {
-                Intent intent = new Intent(this, ParticipantPublicActivity.class);
+                Log.d("DEBUG_VOTAR", "Lanzando RateParticipantActivity para: " + seleccionado.getNombre());
+
+                Intent intent = new Intent(ParticipantsListActivity.this, RateParticipantActivity.class);
                 intent.putExtra("CONCURSANTE_ID", seleccionado.getId());
+                intent.putExtra("CONCURSANTE_NOMBRE", seleccionado.getNombre() + " " + seleccionado.getPrimerApellido());
+                intent.putExtra("CONCURSANTE_FOTO", seleccionado.getImagenUrl());
+
                 startActivity(intent);
+            } else {
+                Log.e("DEBUG_VOTAR", "Error: El concursante seleccionado es nulo");
             }
         });
 
@@ -62,11 +75,9 @@ public class ParticipantsListActivity extends AppCompatActivity {
 
     private void initViews() {
         spinnerEdiciones = findViewById(R.id.spinnerEdiciones);
-        lvParticipantes = findViewById(R.id.lvParticipantes);
+        lvParticipantes = findViewById(R.id.lvParticipantesA);
         etBuscar = findViewById(R.id.etBuscarParticipante);
-        // Ocultamos el filtro de galas en este layout si existiera el ID
-        View galaLayout = findViewById(R.id.layoutFilterGala);
-        if (galaLayout != null) galaLayout.setVisibility(View.GONE);
+        btnBuscar = findViewById(R.id.btnEjecutarBusqueda);
     }
 
     private void cargarEdiciones() {
@@ -74,7 +85,7 @@ public class ParticipantsListActivity extends AppCompatActivity {
             if (ediciones != null && !ediciones.isEmpty()) {
                 listaEdiciones = ediciones;
                 List<String> labels = new ArrayList<>();
-                for (Edicion e : ediciones) labels.add("Edición #" + e.getId());
+                for (Edicion e : ediciones) labels.add("Edición " + e.getId());
 
                 ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, R.layout.spinner_rol_item, labels);
                 spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -97,7 +108,6 @@ public class ParticipantsListActivity extends AppCompatActivity {
                 listaConcursantesFull = new ArrayList<>(concursantes);
                 adapter = new ParticipantAdapter(this, R.layout.item_participant, listaConcursantesFull);
                 lvParticipantes.setAdapter(adapter);
-                filtrarListaLocal(etBuscar.getText().toString());
             }
         });
     }
@@ -106,8 +116,9 @@ public class ParticipantsListActivity extends AppCompatActivity {
         if (adapter == null) return;
         List<Concursante> filtrados = new ArrayList<>();
         String busqueda = texto.toLowerCase().trim();
-        if (busqueda.isEmpty()) filtrados.addAll(listaConcursantesFull);
-        else {
+        if (busqueda.isEmpty()) {
+            filtrados.addAll(listaConcursantesFull);
+        } else {
             for (Concursante c : listaConcursantesFull) {
                 if ((c.getNombre() + " " + c.getPrimerApellido()).toLowerCase().contains(busqueda))
                     filtrados.add(c);

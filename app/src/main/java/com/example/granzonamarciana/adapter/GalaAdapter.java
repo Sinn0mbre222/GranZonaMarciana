@@ -35,18 +35,33 @@ public class GalaAdapter extends BaseAdapter {
     @Override
     public long getItemId(int position) { return position; }
 
+    static class ViewHolder {
+        TextView tvName;
+        TextView tvDate;
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder holder;
+
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.item_gala, parent, false);
+            holder = new ViewHolder();
+            holder.tvName = convertView.findViewById(R.id.tvGalaName);
+            holder.tvDate = convertView.findViewById(R.id.tvGalaDate);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
         }
 
         Gala actual = galas.get(position);
-        TextView tvName = convertView.findViewById(R.id.tvGalaName);
-        TextView tvDate = convertView.findViewById(R.id.tvGalaDate);
 
-        tvName.setText("Gala #" + (position + 1));
-        tvDate.setText(actual.getFecha().format(formatter));
+        // Es mejor usar el ID real de la base de datos o un contador
+        holder.tvName.setText("Gala #" + actual.getId());
+
+        if (actual.getFecha() != null) {
+            holder.tvDate.setText(actual.getFecha().format(formatter));
+        }
 
         return convertView;
     }

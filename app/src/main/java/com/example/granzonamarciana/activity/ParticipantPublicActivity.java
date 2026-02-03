@@ -20,6 +20,7 @@ import com.example.granzonamarciana.entity.Puntuacion;
 import com.example.granzonamarciana.entity.TipoRol;
 import com.example.granzonamarciana.service.ConcursanteService;
 import com.example.granzonamarciana.service.PuntuacionService;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Locale;
@@ -75,10 +76,34 @@ public class ParticipantPublicActivity extends AppCompatActivity {
     private void cargarDatosConcursante() {
         concursanteService.obtenerPorId(concursanteId).observe(this, concursante -> {
             if (concursante != null) {
-                // Usamos getPrimerApellido corregido
                 String nombreCompleto = concursante.getNombre() + " " + concursante.getPrimerApellido();
                 tvNombre.setText(nombreCompleto);
-                ivFoto.setImageResource(R.drawable.ic_default_avatar);
+
+                String imgData = concursante.getImagenUrl();
+
+                if (imgData != null) {
+                    if (imgData.startsWith("http")) {
+                        // Si es una URL de internet
+                        Picasso.get()
+                                .load(imgData)
+                                .placeholder(R.drawable.ic_default_avatar) // Imagen mientras carga
+                                .error(R.drawable.ic_default_avatar)       // Imagen si falla la URL
+                                .into(ivFoto);
+                    } else {
+                        // Si es un recurso interno (ej: "ic_default_avatar")
+                        int resId = getResources().getIdentifier(imgData, "drawable", getPackageName());
+
+                        if (resId != 0) {
+                            Picasso.get().load(resId).into(ivFoto);
+                        } else {
+                            // Si el nombre guardado no existe, ponemos el avatar por defecto
+                            ivFoto.setImageResource(R.drawable.ic_default_avatar);
+                        }
+                    }
+                } else {
+                    // Si la base de datos devuelve null en la imagen
+                    ivFoto.setImageResource(R.drawable.ic_default_avatar);
+                }
             }
         });
     }

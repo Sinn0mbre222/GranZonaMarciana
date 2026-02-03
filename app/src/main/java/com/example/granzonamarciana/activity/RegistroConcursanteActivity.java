@@ -24,7 +24,6 @@ public class RegistroConcursanteActivity extends AppCompatActivity {
     private ConcursanteService concursanteService;
     private EdicionService edicionService;
     private SolicitudService solicitudService;
-
     private EditText etUsername, etPassword, etName, etApellido1, etApellido2, etEmail, etPhone, etImageUrl, etMotivo;
     private Spinner spEdicion;
     private ImageView ivTogglePassword;
@@ -78,10 +77,10 @@ public class RegistroConcursanteActivity extends AppCompatActivity {
         ivTogglePassword.setOnClickListener(v -> {
             if (passwordVisible) {
                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                ivTogglePassword.setImageResource(R.drawable.ic_visibility_off);
+                ivTogglePassword.setImageResource(android.R.drawable.ic_menu_view);
             } else {
                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                ivTogglePassword.setImageResource(R.drawable.ic_visibility);
+                ivTogglePassword.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
             }
             passwordVisible = !passwordVisible;
             etPassword.setSelection(etPassword.getText().length());
@@ -92,76 +91,56 @@ public class RegistroConcursanteActivity extends AppCompatActivity {
     }
 
     private void registrarUsuario() {
-        // 1. Obtener todos los textos
         String username = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         String name = etName.getText().toString().trim();
-        String apellido1 = etApellido1.getText().toString().trim();
-        String apellido2 = etApellido2.getText().toString().trim();
+        String ap1 = etApellido1.getText().toString().trim();
+        String ap2 = etApellido2.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         String motivacion = etMotivo.getText().toString().trim();
-        String imageUrlInput = etImageUrl.getText().toString().trim();
+        String imageUrl = etImageUrl.getText().toString().trim();
 
-        // 2. Validación: Todos obligatorios EXCEPTO la imagen
-        if (username.isEmpty() || password.isEmpty() || name.isEmpty() ||
-                apellido1.isEmpty() || apellido2.isEmpty() || email.isEmpty() ||
-                phone.isEmpty() || motivacion.isEmpty()) {
-
-            Toast.makeText(this, "Todos los campos son obligatorios (excepto imagen)", Toast.LENGTH_LONG).show();
+        if (username.isEmpty() || password.isEmpty() || name.isEmpty() || ap1.isEmpty() ||
+                ap2.isEmpty() || email.isEmpty() || phone.isEmpty() || motivacion.isEmpty()) {
+            Toast.makeText(this, "Rellena todos los campos obligatorios", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // 3. Lógica de la imagen para Picasso
-        // Si el usuario deja el campo vacío, usamos la referencia local "ic_default_avatar".
-        // Si escribe algo (una URL), guardamos esa URL tal cual.
-        String finalImageUrl;
-        if (imageUrlInput.isEmpty()) {
-            finalImageUrl = "ic_default_avatar";
-        } else {
-            finalImageUrl = imageUrlInput;
+        if (phone.length() != 9) {
+            etPhone.setError("9 dígitos requeridos");
+            return;
         }
 
-        // 4. Crear el objeto Concursante
+        if (!email.contains("@")) {
+            etEmail.setError("Email inválido");
+            return;
+        }
+
+        // IMAGEN OPCIONAL
+        String finalImageUrl;
+        if (imageUrl.isEmpty()) {
+            finalImageUrl = "ic_person"; // Valor por defecto
+        } else {
+            finalImageUrl = imageUrl; // URL introducida
+        }
+
         Concursante c = new Concursante(
-                username,
-                BCrypt.hashpw(password, BCrypt.gensalt()),
-                name,
-                apellido1,
-                apellido2,
-                phone,
-                email,
-                finalImageUrl, // Guardamos la URL o el avatar por defecto
-                TipoRol.CONCURSANTE,
-                LocalDate.now()
+                username, BCrypt.hashpw(password, BCrypt.gensalt()),
+                name, ap1, ap2, phone, email, finalImageUrl,
+                TipoRol.CONCURSANTE, LocalDate.now()
         );
 
-        // 5. Insertar concursante y LUEGO crear la solicitud
         concursanteService.insert(c);
 
-        // Esperamos a que se inserte para recuperar el ID
         concursanteService.buscarConcursantePorUsername(username).observe(this, nuevoCon -> {
             if (nuevoCon != null) {
-
-                // Validación extra por si la lista de ediciones no ha cargado
-                if (listaEdiciones.isEmpty()) {
-                    Toast.makeText(this, "No hay ediciones disponibles", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
+                if (listaEdiciones.isEmpty()) return;
                 int edicionId = listaEdiciones.get(spEdicion.getSelectedItemPosition()).getId();
+                Solicitud s = new Solicitud(edicionId, nuevoCon.getId(), motivacion, EstadoSolicitud.PENDIENTE);
+                solicitudService.insert(s);
 
-                Solicitud nuevaSolicitud = new Solicitud(
-                        edicionId,
-                        nuevoCon.getId(),
-                        motivacion,
-                        EstadoSolicitud.PENDIENTE
-                );
-
-                solicitudService.insert(nuevaSolicitud);
-
-                Toast.makeText(this, "Registro completado. ¡Mucha suerte!", Toast.LENGTH_LONG).show();
-                startActivity(new Intent(this, LoginActivity.class));
+                Toast.makeText(this, "Registro enviado correctamente", Toast.LENGTH_LONG).show();
                 finish();
             }
         });

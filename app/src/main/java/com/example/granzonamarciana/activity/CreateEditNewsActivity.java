@@ -2,105 +2,159 @@ package com.example.granzonamarciana.activity;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.granzonamarciana.R;
-import com.example.granzonamarciana.entity.Noticia;
 import com.example.granzonamarciana.entity.Edicion;
+import com.example.granzonamarciana.entity.Noticia;
+import com.example.granzonamarciana.service.EdicionService;
 import com.example.granzonamarciana.service.NoticiaService;
-import com.example.granzonamarciana.service.EdicionService; // Asumiendo que existe
+
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CreateEditNewsActivity extends AppCompatActivity {
-    private NoticiaService service;
-    private EdicionService edicionService; // Para cargar el Spinner
-    private EditText etT, etB, etI;
+
+    private NoticiaService noticiaService;
+    private EdicionService edicionService;
+
+    private EditText etTitulo, etCuerpo, etImagenUrl;
     private Spinner spEdiciones;
-    private int idNoticia, adminId;
-    private List<Edicion> listaEdiciones; // Guardamos la lista para buscar IDs
+    private Button btnGuardar, btnEliminar;
+    private TextView tvPantalla;
+
+    private int idNoticiaExistente = -1;
+    private int adminIdLogueado;
+    private List<Edicion> listaEdicionesCargadas = new ArrayList<>();
+    private Noticia noticiaActual; // Para tener el objeto completo en caso de delete
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_edit_news);
 
-        // Inicialización
-        service = new NoticiaService(this);
+        noticiaService = new NoticiaService(this);
         edicionService = new EdicionService(this);
 
-        etT = findViewById(R.id.etNewsTitle);
-        etB = findViewById(R.id.etNewsBody);
-        etI = findViewById(R.id.etNewsImageUrl);
-        spEdiciones = findViewById(R.id.spEdiciones);
-
         SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
-        adminId = prefs.getInt("id", -1);
+        adminIdLogueado = prefs.getInt("id", -1);
 
-        // 1. Cargar el Spinner con ediciones de la BD
-        cargarSpinnerEdiciones();
+        idNoticiaExistente = getIntent().getIntExtra("NOTICIA_ID", -1);
 
-        // 2. Si editamos, cargamos los datos
-        if (idNoticia != -1) {
-            service.buscarPorId(idNoticia).observe(this, n -> {
-                if (n != null) {
-                    etT.setText(n.getCabecera());
-                    etB.setText(n.getCuerpo());
-                    etI.setText(n.getImagen());
-                    // Nota: Para seleccionar la edición en el spinner al editar,
-                    // se hace dentro de cargarSpinnerEdiciones cuando la lista esté lista.
-                }
-            });
+        initViews();
+
+        // Si es edición, cambiamos el texto del botón y mostramos el de eliminar
+        if (idNoticiaExistente != -1) {
+            tvPantalla.setText("EDITAR NOTICIA");
+            btnGuardar.setText("ACTUALIZAR NOTICIA");
+            btnEliminar.setVisibility(View.VISIBLE);
         }
 
-        findViewById(R.id.btnSaveNews).setOnClickListener(v -> guardarNoticia());
+        cargarSpinnerEdiciones();
+
+        btnGuardar.setOnClickListener(v -> guardarNoticia());
+        btnEliminar.setOnClickListener(v -> confirmarEliminacion());
+        findViewById(R.id.tvBack).setOnClickListener(v -> finish());
+    }
+
+    private void initViews() {
+        etTitulo = findViewById(R.id.etNewsTitle);
+        etCuerpo = findViewById(R.id.etNewsBody);
+        etImagenUrl = findViewById(R.id.etNewsImageUrl);
+        spEdiciones = findViewById(R.id.spEdiciones);
+        btnGuardar = findViewById(R.id.btnSaveNews);
+        btnEliminar = findViewById(R.id.btnDeleteNews);
+        tvPantalla = findViewById(R.id.tvTitle);
     }
 
     private void cargarSpinnerEdiciones() {
         edicionService.listarEdiciones().observe(this, ediciones -> {
-            if (ediciones != null) {
-                this.listaEdiciones = ediciones;
-                // Usamos un simple ArrayAdapter. Asegúrate que Edicion.java tenga un buen toString()
-                ArrayAdapter<Edicion> adapter = new ArrayAdapter<>(this,
-                        android.R.layout.simple_spinner_item, ediciones);
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            if (ediciones != null && !ediciones.isEmpty()) {
+                this.listaEdicionesCargadas = ediciones;
+                List<String> nombres = new ArrayList<>();
+                for (Edicion e : ediciones) {
+                    nombres.add("Edición #" + e.getId());
+                }
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                        R.layout.spinner_rol_item, nombres);
+                adapter.setDropDownViewResource(R.layout.spinner_rol_item);
                 spEdiciones.setAdapter(adapter);
 
-                // Si es edición, intentamos seleccionar la edición que ya tenía la noticia
-                // (Requiere lógica adicional comparando IDs de n.getEdicionId() con listaEdiciones)
+                if (idNoticiaExistente != -1) {
+                    cargarDatosNoticiaParaEditar();
+                }
+            }
+        });
+    }
+
+    private void cargarDatosNoticiaParaEditar() {
+        noticiaService.buscarPorId(idNoticiaExistente).observe(this, noticia -> {
+            if (noticia != null) {
+                noticiaActual = noticia;
+                etTitulo.setText(noticia.getCabecera());
+                etCuerpo.setText(noticia.getCuerpo());
+                etImagenUrl.setText(noticia.getImagen());
+
+                for (int i = 0; i < listaEdicionesCargadas.size(); i++) {
+                    if (listaEdicionesCargadas.get(i).getId() == noticia.getEdicionId()) {
+                        spEdiciones.setSelection(i);
+                        break;
+                    }
+                }
             }
         });
     }
 
     private void guardarNoticia() {
-        // Obtener edición seleccionada
-        Edicion edicionSeleccionada = (Edicion) spEdiciones.getSelectedItem();
+        String cabecera = etTitulo.getText().toString().trim();
+        String cuerpo = etCuerpo.getText().toString().trim();
+        String urlImagen = etImagenUrl.getText().toString().trim();
 
-        if (edicionSeleccionada == null) {
-            Toast.makeText(this, "Por favor, selecciona una edición", Toast.LENGTH_SHORT).show();
+        if (cabecera.isEmpty() || cuerpo.isEmpty() || spEdiciones.getSelectedItem() == null) {
+            Toast.makeText(this, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Noticia n = new Noticia(
-                LocalDate.now(),
-                etB.getText().toString(),
-                etT.getText().toString(),
-                etI.getText().toString(),
-                edicionSeleccionada.getId(), // Usamos el ID del Spinner
-                adminId
-        );
+        int edicionId = listaEdicionesCargadas.get(spEdiciones.getSelectedItemPosition()).getId();
 
-        if (idNoticia == -1) {
-            service.insertarNoticia(n);
-            Toast.makeText(this, "Noticia creada", Toast.LENGTH_SHORT).show();
+        if (idNoticiaExistente == -1) {
+            Noticia n = new Noticia(LocalDate.now(), cuerpo, cabecera, urlImagen, edicionId, adminIdLogueado);
+            noticiaService.insertarNoticia(n);
+            Toast.makeText(this, "Noticia publicada", Toast.LENGTH_SHORT).show();
         } else {
-            n.setId(idNoticia);
-            service.actualizarNoticia(n);
+            noticiaActual.setCabecera(cabecera);
+            noticiaActual.setCuerpo(cuerpo);
+            noticiaActual.setImagen(urlImagen);
+            noticiaActual.setEdicionId(edicionId);
+            noticiaService.actualizarNoticia(noticiaActual);
             Toast.makeText(this, "Noticia actualizada", Toast.LENGTH_SHORT).show();
         }
         finish();
+    }
+
+    private void confirmarEliminacion() {
+        new AlertDialog.Builder(this)
+                .setTitle("Eliminar Noticia")
+                .setMessage("¿Estás seguro de que deseas eliminar esta noticia? Esta acción no se puede deshacer.")
+                .setPositiveButton("Eliminar", (dialog, which) -> {
+                    if (noticiaActual != null) {
+                        noticiaService.eliminarNoticia(noticiaActual);
+                        Toast.makeText(this, "Noticia eliminada", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 }

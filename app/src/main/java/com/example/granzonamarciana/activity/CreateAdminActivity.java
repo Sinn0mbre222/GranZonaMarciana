@@ -24,8 +24,13 @@ public class CreateAdminActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_admin);
 
         adminService = new AdministradorService(this);
+        initViews();
 
-        // Vincular vistas
+        btnCreate.setOnClickListener(v -> crearNuevoAdmin());
+        btnCancel.setOnClickListener(v -> finish());
+    }
+
+    private void initViews() {
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         etName = findViewById(R.id.etName);
@@ -36,14 +41,9 @@ public class CreateAdminActivity extends AppCompatActivity {
         etImageUrl = findViewById(R.id.etImageUrl);
         btnCreate = findViewById(R.id.btnCreateUser);
         btnCancel = findViewById(R.id.btnCancel);
-
-
-        btnCreate.setOnClickListener(v -> crearNuevoAdmin());
-        btnCancel.setOnClickListener(v -> finish());
     }
 
     private void crearNuevoAdmin() {
-        // REQUISITO: Validar datos (simplificado para el ejemplo)
         String user = etUsername.getText().toString().trim();
         String pass = etPassword.getText().toString().trim();
         String name = etName.getText().toString().trim();
@@ -53,78 +53,41 @@ public class CreateAdminActivity extends AppCompatActivity {
         String email = etEmail.getText().toString().trim();
         String imageUrl = etImageUrl.getText().toString().trim();
 
-        // 2. VALIDACIÓN DE CAMPOS OBLIGATORIOS
-        if (user.isEmpty()) {
-            etUsername.setError("El usuario es obligatorio");
-            etUsername.requestFocus();
+        // VALIDACIONES OBLIGATORIAS
+        if (user.isEmpty() || pass.isEmpty() || name.isEmpty() || last1.isEmpty() ||
+                last2.isEmpty() || phone.isEmpty() || email.isEmpty()) {
+            Toast.makeText(this, "Todos los campos (excepto imagen) son obligatorios", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (pass.isEmpty()) {
-            etPassword.setError("La contraseña es obligatoria");
-            etPassword.requestFocus();
-            return;
-        }
-        if (name.isEmpty()) {
-            etName.setError("El nombre es obligatorio");
-            etName.requestFocus();
-            return;
-        }
-        if (last1.isEmpty()) {
-            etLastName1.setError("El primer apellido es obligatorio");
-            etLastName1.requestFocus();
-            return;
-        }
-        if (last2.isEmpty()) {
-            etLastName2.setError("El segundo apellido es obligatorio");
-            etLastName2.requestFocus();
-            return;
-        }
-        if (phone.isEmpty()) {
-            etPhone.setError("El teléfono es obligatorio");
-            etPhone.requestFocus();
-            return;
-        }
-        if (email.isEmpty()) {
-            etEmail.setError("El email es obligatorio");
-            etEmail.requestFocus();
-            return;
-        }
-        // --- VALIDACIÓN DE TELÉFONO (9 DÍGITOS) ---
+
         if (phone.length() != 9) {
-            etPhone.setError("El teléfono debe tener exactamente 9 dígitos");
-            etPhone.requestFocus();
+            etPhone.setError("El teléfono debe tener 9 dígitos");
             return;
         }
 
-        // --- VALIDACIÓN DE EMAIL (DEBE CONTENER @) ---
-        if (!email.contains("@") || email.length() < 5) {
-            etEmail.setError("Introduce un correo electrónico válido");
-            etEmail.requestFocus();
+        if (!email.contains("@")) {
+            etEmail.setError("Introduce un email válido");
             return;
         }
 
+        String finalImageUrl;
         if (imageUrl.isEmpty()) {
-            imageUrl = "ic_person"; // Ponemos el icono por defecto si el admin no pone URL
+            finalImageUrl = "ic_person"; // Valor por defecto
+        } else {
+            finalImageUrl = imageUrl; // URL introducida
         }
 
-        // Crear el objeto Administrador
         Administrador nuevoAdmin = new Administrador(
                 user,
                 BCrypt.hashpw(pass, BCrypt.gensalt()),
-                name,
-                last1,
-                last2,
-                phone,
-                email,
-                imageUrl,
+                name, last1, last2, phone, email,
+                finalImageUrl,
                 TipoRol.ADMINISTRADOR,
                 LocalDate.now()
         );
 
-        // Guardar en la base de datos
         adminService.insertarAdministrador(nuevoAdmin);
-
-        Toast.makeText(this, "Administrador "+ user +" creado correctamente", Toast.LENGTH_SHORT).show();
-        finish(); // Volver al menú
+        Toast.makeText(this, "Administrador creado correctamente", Toast.LENGTH_SHORT).show();
+        finish();
     }
 }

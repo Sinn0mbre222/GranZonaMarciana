@@ -1,20 +1,9 @@
 package com.example.granzonamarciana.entity;
 
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
-import androidx.room.Index;
 import java.time.LocalDate;
 
-@Entity(
-        tableName = "noticias",
-        foreignKeys = @ForeignKey(
-                entity = Administrador.class,
-                parentColumns = "id",
-                childColumns = "administradorId",
-                onDelete = ForeignKey.CASCADE
-        ),
-        indices = {@Index("administradorId")}
-)
+@Entity(tableName = "noticias")
 public class Noticia extends DomainEntity {
 
     private LocalDate fechaPublicacion;
@@ -22,7 +11,7 @@ public class Noticia extends DomainEntity {
     private String cabecera;
     private String imagen;
     private int edicionId;
-    private int administradorId; // Relación con el autor
+    private int administradorId;
 
     public Noticia(LocalDate fechaPublicacion, String cuerpo, String cabecera, String imagen, int edicionId, int administradorId) {
         this.fechaPublicacion = fechaPublicacion;
@@ -44,6 +33,7 @@ public class Noticia extends DomainEntity {
     public void setFechaPublicacion(LocalDate fechaPublicacion) { this.fechaPublicacion = fechaPublicacion; }
     public void setCuerpo(String cuerpo) { this.cuerpo = cuerpo; }
     public void setCabecera(String cabecera) { this.cabecera = cabecera; }
+
     public void setImagen(String imagen) { this.imagen = imagen; }
     public void setEdicionId(int edicionId) { this.edicionId = edicionId; }
     public void setAdministradorId(int administradorId) { this.administradorId = administradorId; }

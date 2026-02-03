@@ -26,7 +26,7 @@ public class NoticiaAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return noticias.size();
+        return noticias != null ? noticias.size() : 0;
     }
 
     @Override
@@ -39,31 +39,58 @@ public class NoticiaAdapter extends BaseAdapter {
         return noticias.get(position).getId();
     }
 
+    // Clase interna para optimizar el rendimiento de la lista
+    static class ViewHolder {
+        TextView title;
+        TextView date;
+        ImageView img;
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder holder;
+
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.item_noticia, parent, false);
+            holder = new ViewHolder();
+            // Ajustamos los IDs a los del XML item_noticia.xml
+            holder.title = convertView.findViewById(R.id.tvNewsTitleItem);
+            holder.date = convertView.findViewById(R.id.tvNewsDateItem);
+            holder.img = convertView.findViewById(R.id.ivNewsItem);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
         }
 
         Noticia noticia = noticias.get(position);
 
-        TextView title = convertView.findViewById(R.id.tvItemTitulo);
-        TextView date = convertView.findViewById(R.id.tvItemFecha);
-        ImageView img = convertView.findViewById(R.id.ivItemNoticia);
+        holder.title.setText(noticia.getCabecera());
 
-        title.setText(noticia.getCabecera());
+        // Corregido: LocalDate no tiene horas, usamos solo fecha
+        if (noticia.getFechaPublicacion() != null) {
+            String fechaFormateada = noticia.getFechaPublicacion().format(
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            holder.date.setText(fechaFormateada);
+        }
 
-        String fechaFormateada = noticia.getFechaPublicacion().format(
-                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-        date.setText("Publicado: " + fechaFormateada);
-
-        // Cargar imagen con Picasso
-        Picasso.get()
-                .load(noticia.getImagen())
-                .placeholder(android.R.drawable.ic_menu_gallery)
-                .error(android.R.drawable.ic_menu_gallery)
-                .into(img);
+        // Cargar imagen con Picasso usando iconos del sistema
+        if (noticia.getImagen() != null && !noticia.getImagen().trim().isEmpty()) {
+            Picasso.get()
+                    .load(noticia.getImagen())
+                    .placeholder(android.R.drawable.ic_menu_report_image)
+                    .error(android.R.drawable.ic_menu_report_image)
+                    .fit() // Optimiza la imagen al tamaño del ImageView
+                    .centerCrop()
+                    .into(holder.img);
+        } else {
+            holder.img.setImageResource(android.R.drawable.ic_menu_report_image);
+        }
 
         return convertView;
+    }
+
+    public void setNoticias(List<Noticia> nuevasNoticias) {
+        this.noticias = nuevasNoticias;
+        notifyDataSetChanged();
     }
 }

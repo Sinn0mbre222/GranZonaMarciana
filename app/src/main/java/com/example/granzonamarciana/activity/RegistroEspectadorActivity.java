@@ -3,21 +3,13 @@ package com.example.granzonamarciana.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.granzonamarciana.R;
 import com.example.granzonamarciana.entity.Espectador;
 import com.example.granzonamarciana.entity.TipoRol;
 import com.example.granzonamarciana.service.EspectadorService;
-
 import org.mindrot.jbcrypt.BCrypt;
-
 import java.time.LocalDate;
 
 public class RegistroEspectadorActivity extends AppCompatActivity {
@@ -26,7 +18,6 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
     private EditText etUsername, etPassword, etName, etApellido1, etApellido2, etEmail, etPhone, etImageUrl;
     private ImageView ivTogglePassword;
     private Button btnFinalizeRegister;
-    private TextView tvBackToLogin;
     private boolean passwordVisible = false;
 
     @Override
@@ -34,9 +25,7 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registro_espectador);
 
-        // Inicializar el servicio
         espectadorService = new EspectadorService(this);
-
         initViews();
         setupListeners();
     }
@@ -52,29 +41,23 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
         etImageUrl = findViewById(R.id.etImageUrl);
         ivTogglePassword = findViewById(R.id.ivTogglePassword);
         btnFinalizeRegister = findViewById(R.id.btnFinalizeRegister);
-        tvBackToLogin = findViewById(R.id.tvBackToLogin);
     }
 
     private void setupListeners() {
-        // Lógica para mostrar/ocultar contraseña
         ivTogglePassword.setOnClickListener(v -> {
             if (passwordVisible) {
                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                ivTogglePassword.setImageResource(R.drawable.ic_visibility_off);
+                ivTogglePassword.setImageResource(android.R.drawable.ic_menu_view);
             } else {
                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                ivTogglePassword.setImageResource(R.drawable.ic_visibility);
+                ivTogglePassword.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
             }
             passwordVisible = !passwordVisible;
-            // Mantener el cursor al final del texto
             etPassword.setSelection(etPassword.getText().length());
         });
 
-        // Botón Registrar
         btnFinalizeRegister.setOnClickListener(v -> registrarEspectador());
-
-        // Botón Volver (TextView)
-        tvBackToLogin.setOnClickListener(v -> finish());
+        findViewById(R.id.tvBackToLogin).setOnClickListener(v -> finish());
     }
 
     private void registrarEspectador() {
@@ -85,56 +68,38 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
         String ap2 = etApellido2.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String tlf = etPhone.getText().toString().trim();
-        String imgInput = etImageUrl.getText().toString().trim();
+        String imageUrl = etImageUrl.getText().toString().trim();
 
-        // 1. VALIDACIÓN: Todos obligatorios EXCEPTO la imagen
-        if (username.isEmpty() || password.isEmpty() || nombre.isEmpty() ||
-                ap1.isEmpty() || ap2.isEmpty() || email.isEmpty() || tlf.isEmpty()) {
-
-            Toast.makeText(this, "Por favor, rellena todos los campos (excepto imagen)", Toast.LENGTH_SHORT).show();
+        if (username.isEmpty() || password.isEmpty() || nombre.isEmpty() || ap1.isEmpty() || ap2.isEmpty() || email.isEmpty() || tlf.isEmpty()) {
+            Toast.makeText(this, "Campos obligatorios vacíos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // 2. LÓGICA DE IMAGEN (Compatible con Picasso)
-        // Si escribe algo, asumimos que es una URL o un nombre válido.
-        // Si lo deja vacío, forzamos el avatar por defecto.
-        String finalImage;
-        if (imgInput.isEmpty()) {
-            finalImage = "ic_default_avatar";
+        if (tlf.length() != 9) {
+            etPhone.setError("9 dígitos");
+            return;
+        }
+
+        if (!email.contains("@")) {
+            etEmail.setError("Email no válido");
+            return;
+        }
+
+        // IMAGEN OPCIONAL
+        String finalImageUrl;
+        if (imageUrl.isEmpty()) {
+            finalImageUrl = "ic_person"; // Valor por defecto
         } else {
-            finalImage = imgInput;
+            finalImageUrl = imageUrl; // URL introducida
         }
+        Espectador e = new Espectador(
+                username, BCrypt.hashpw(password, BCrypt.gensalt()),
+                nombre, ap1, ap2, tlf, email, finalImageUrl,
+                TipoRol.ESPECTADOR, LocalDate.now()
+        );
 
-        // Encriptar contraseña
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-
-        try {
-            // Crear el objeto Espectador con la imagen procesada
-            Espectador e = new Espectador(
-                    username,
-                    hashedPassword,
-                    nombre,
-                    ap1,
-                    ap2,
-                    tlf,
-                    email,
-                    finalImage,
-                    TipoRol.ESPECTADOR,
-                    LocalDate.now()
-            );
-
-            // Guardar en base de datos
-            espectadorService.insertar(e);
-
-            Toast.makeText(this, "¡Registro de Espectador completado!", Toast.LENGTH_LONG).show();
-
-            // Redirigir al Login y limpiar la pila de actividades
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-
-        } catch (Exception ex) {
-            Toast.makeText(this, "Error en el registro: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+        espectadorService.insertar(e);
+        Toast.makeText(this, "Registro de Espectador completado", Toast.LENGTH_LONG).show();
+        finish();
     }
 }

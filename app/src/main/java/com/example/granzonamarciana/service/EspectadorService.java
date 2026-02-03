@@ -7,26 +7,22 @@ import com.example.granzonamarciana.database.DatabaseHelper;
 import com.example.granzonamarciana.entity.Espectador;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class EspectadorService {
 
     private final EspectadorDao espectadorDao;
-    private final ExecutorService executor;
 
     public EspectadorService(Context context) {
         DatabaseHelper db = DatabaseHelper.getInstance(context);
         this.espectadorDao = db.espectadorDao();
-        this.executor = Executors.newSingleThreadExecutor();
     }
 
     public void insertar(Espectador espectador) {
-        executor.execute(() -> espectadorDao.insert(espectador));
+        new Thread(() -> espectadorDao.insert(espectador)).start();
     }
 
     public void actualizar(Espectador espectador) {
-        executor.execute(() -> espectadorDao.update(espectador));
+        new Thread(() -> espectadorDao.update(espectador)).start();
     }
 
     public LiveData<Espectador> obtenerPorId(int id) {
@@ -38,6 +34,6 @@ public class EspectadorService {
     }
 
     public LiveData<List<Espectador>> obtenerTodos() {
-        return espectadorDao.findAll(); // Asegúrate de tener findAll() en el DAO
+        return espectadorDao.findAll();
     }
 }

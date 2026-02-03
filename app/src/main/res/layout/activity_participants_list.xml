@@ -24,7 +24,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Consulta las ediciones y sus participantes"
+            android:text="Filtra por edición y gala"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
             android:layout_gravity="center_horizontal"
@@ -47,6 +47,30 @@
 
             <Spinner
                 android:id="@+id/spinnerEdiciones"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="12dp"
+                android:background="@null" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutFilterGala"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/edittext_background"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_today"
+                app:tint="@color/icon_tint" />
+
+            <Spinner
+                android:id="@+id/spinnerGalas"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="12dp"

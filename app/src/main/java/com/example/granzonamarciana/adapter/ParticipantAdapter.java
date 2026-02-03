@@ -1,7 +1,6 @@
 package com.example.granzonamarciana.adapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.granzonamarciana.R;
-import com.example.granzonamarciana.activity.ProfileActivity; // Importar
 import com.example.granzonamarciana.entity.Concursante;
 import com.squareup.picasso.Picasso;
 
@@ -71,13 +69,8 @@ public class ParticipantAdapter extends ArrayAdapter<Concursante> {
                 holder.ivFoto.setImageResource(R.drawable.ic_default_avatar);
             }
 
-            // --- CLICK PARA VER EL PERFIL DEL CONCURSANTE ---
-            convertView.setOnClickListener(v -> {
-                Intent intent = new Intent(context, ProfileActivity.class);
-                intent.putExtra("TARGET_USER_ID", concursante.getId());
-                intent.putExtra("TARGET_USER_ROLE", "CONCURSANTE"); // Siempre es concursante en esta lista
-                context.startActivity(intent);
-            });
+            // HEMOS BORRADO EL setOnClickListener DE AQUÍ.
+            // Ahora la Activity podrá tomar el control.
         }
 
         return convertView;

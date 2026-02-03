@@ -18,23 +18,29 @@ import com.example.granzonamarciana.R;
 import com.example.granzonamarciana.entity.Administrador;
 import com.example.granzonamarciana.entity.Concursante;
 import com.example.granzonamarciana.entity.Espectador;
+import com.example.granzonamarciana.entity.Puntuacion;
 import com.example.granzonamarciana.service.AdministradorService;
 import com.example.granzonamarciana.service.ConcursanteService;
 import com.example.granzonamarciana.service.EspectadorService;
+import com.example.granzonamarciana.service.PuntuacionService;
 import com.squareup.picasso.Picasso;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.Locale;
+
 public class ProfileActivity extends AppCompatActivity {
 
     private EditText etNombre, etApellido1, etApellido2, etEmail, etTelefono, etImageUrl;
-    private TextView tvUsername, tvUserRole, tvJoinDate;
+    private TextView tvUsername, tvUserRole, tvJoinDate, tvRatingMedia;
     private ImageView ivProfileImage;
     private Button btnGuardar, btnCambiarPass;
+    private LinearLayout layoutEstadisticas;
 
     private AdministradorService adminService;
     private ConcursanteService concursanteService;
     private EspectadorService espectadorService;
+    private PuntuacionService puntuacionService;
 
     private Administrador currentAdmin;
     private Concursante currentConcursante;
@@ -42,7 +48,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private String userRole;
     private int userId;
-    private boolean isReadOnly = false; // Variable para controlar el modo
+    private boolean isReadOnly = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,23 +56,19 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_detail);
 
         initViews();
+        initServices();
 
-        adminService = new AdministradorService(this);
-        concursanteService = new ConcursanteService(this);
-        espectadorService = new EspectadorService(this);
-
-        // 1. COMPROBAR SI VIENE POR INTENT (Modo Lectura / Admin / Invitado)
+        // 1. Comprobar si viene por Intent (Modo Lectura / Admin viendo a otro)
         int intentId = getIntent().getIntExtra("TARGET_USER_ID", -1);
         String intentRole = getIntent().getStringExtra("TARGET_USER_ROLE");
 
         if (intentId != -1 && intentRole != null) {
-            // Caso: Viendo perfil de otro usuario
             userId = intentId;
             userRole = intentRole;
             isReadOnly = true;
             activarModoLectura();
         } else {
-            // 2. Si no hay Intent, cargamos mi propia sesión (Modo Edición)
+            // 2. Cargar mi propia sesión (Modo Edición)
             SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
             userId = prefs.getInt("id", -1);
             userRole = prefs.getString("rol", "");
@@ -74,14 +76,13 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         if (userId == -1) {
-            Toast.makeText(this, "Usuario no encontrado o sesión no válida", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
         loadUserData();
 
-        // Solo activar listeners de guardado si NO es solo lectura
         if (!isReadOnly) {
             btnGuardar.setOnClickListener(v -> saveChanges());
             btnCambiarPass.setOnClickListener(v -> showChangePasswordDialog());
@@ -99,7 +100,10 @@ public class ProfileActivity extends AppCompatActivity {
         tvUsername = findViewById(R.id.tvUsername);
         tvUserRole = findViewById(R.id.tvUserRole);
         tvJoinDate = findViewById(R.id.tvJoinDate);
+        tvRatingMedia = findViewById(R.id.tvRatingMedia);
         ivProfileImage = findViewById(R.id.ivProfile);
+
+        layoutEstadisticas = findViewById(R.id.layoutEstadisticas);
 
         btnGuardar = findViewById(R.id.btnGuardar);
         btnCambiarPass = findViewById(R.id.btnCambiarPass);
@@ -110,20 +114,23 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    private void initServices() {
+        adminService = new AdministradorService(this);
+        concursanteService = new ConcursanteService(this);
+        espectadorService = new EspectadorService(this);
+        puntuacionService = new PuntuacionService(this);
+    }
+
     private void activarModoLectura() {
-        // Ocultar botones de edición
         if (btnGuardar != null) btnGuardar.setVisibility(View.GONE);
         if (btnCambiarPass != null) btnCambiarPass.setVisibility(View.GONE);
 
-        // Deshabilitar campos de texto (visual solo)
         deshabilitarEditText(etNombre);
         deshabilitarEditText(etApellido1);
         deshabilitarEditText(etApellido2);
         deshabilitarEditText(etEmail);
         deshabilitarEditText(etTelefono);
         deshabilitarEditText(etImageUrl);
-
-        // Opcional: Cambiar título de la pantalla si lo tuvieras
     }
 
     private void deshabilitarEditText(EditText et) {
@@ -132,8 +139,6 @@ public class ProfileActivity extends AppCompatActivity {
             et.setClickable(false);
             et.setCursorVisible(false);
             et.setKeyListener(null);
-            // Cambiar color para indicar que está deshabilitado visualmente si quieres
-            // et.setTextColor(getResources().getColor(R.color.text_disabled));
         }
     }
 
@@ -159,6 +164,10 @@ public class ProfileActivity extends AppCompatActivity {
                         tvUserRole.setText("Concursante");
                         tvJoinDate.setText(String.valueOf(concu.getFechaRegistro()));
                         populateFields(concu.getNombre(), concu.getPrimerApellido(), concu.getSegundoApellido(), concu.getEmail(), concu.getTelefono(), concu.getImagenUrl());
+
+                        // Mostrar estadísticas solo para concursantes
+                        layoutEstadisticas.setVisibility(View.VISIBLE);
+                        cargarMediaConcursante(concu.getId());
                     }
                 });
                 break;
@@ -177,6 +186,21 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    private void cargarMediaConcursante(int concursanteId) {
+        puntuacionService.obtenerHistorialConcursante(concursanteId).observe(this, puntuaciones -> {
+            if (puntuaciones != null && !puntuaciones.isEmpty()) {
+                double suma = 0;
+                for (Puntuacion p : puntuaciones) {
+                    suma += p.getValor();
+                }
+                double media = suma / puntuaciones.size();
+                tvRatingMedia.setText(String.format(Locale.getDefault(), "%.1f ★", media));
+            } else {
+                tvRatingMedia.setText("Sin votos");
+            }
+        });
+    }
+
     private void populateFields(String nombre, String ap1, String ap2, String email, String tlf, String imgUrl) {
         etNombre.setText(nombre);
         etApellido1.setText(ap1);
@@ -185,44 +209,37 @@ public class ProfileActivity extends AppCompatActivity {
         etTelefono.setText(tlf);
         etImageUrl.setText(imgUrl);
 
-        // Lógica de imagen simplificada:
-        // Solo intentamos cargar si parece una URL válida (empieza por http/https)
-        if (imgUrl != null && !imgUrl.isEmpty() && (imgUrl.startsWith("http") || imgUrl.startsWith("https"))) {
+        if (imgUrl != null && !imgUrl.isEmpty() && (imgUrl.startsWith("http"))) {
             Picasso.get()
                     .load(imgUrl)
-                    .placeholder(R.drawable.ic_default_avatar) // Se ve mientras carga
-                    .error(R.drawable.ic_default_avatar)       // Se ve si el enlace está roto o falla
+                    .placeholder(R.drawable.ic_default_avatar)
+                    .error(R.drawable.ic_default_avatar)
                     .into(ivProfileImage);
         } else {
-            // Si es nulo, vacío o texto normal, ponemos el defecto directamente
             ivProfileImage.setImageResource(R.drawable.ic_default_avatar);
         }
     }
 
     private void saveChanges() {
-        if (isReadOnly) return; // Seguridad extra
+        if (isReadOnly) return;
 
         String nombre = etNombre.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String url = etImageUrl.getText().toString().trim();
 
         if (nombre.isEmpty() || email.isEmpty()) {
-            Toast.makeText(this, "Campos obligatorios vacíos", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nombre y Email son obligatorios", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        try {
-            if (userRole.equals("ADMINISTRADOR") && currentAdmin != null) {
-                actualizarAdmin(nombre, email, url);
-            } else if (userRole.equals("CONCURSANTE") && currentConcursante != null) {
-                actualizarConcursante(nombre, email, url);
-            } else if (userRole.equals("ESPECTADOR") && currentEspectador != null) {
-                actualizarEspectador(nombre, email, url);
-            }
-            Toast.makeText(this, "Perfil actualizado", Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Toast.makeText(this, "Error al guardar cambios", Toast.LENGTH_SHORT).show();
+        if (userRole.equals("ADMINISTRADOR") && currentAdmin != null) {
+            actualizarAdmin(nombre, email, url);
+        } else if (userRole.equals("CONCURSANTE") && currentConcursante != null) {
+            actualizarConcursante(nombre, email, url);
+        } else if (userRole.equals("ESPECTADOR") && currentEspectador != null) {
+            actualizarEspectador(nombre, email, url);
         }
+        Toast.makeText(this, "Perfil actualizado", Toast.LENGTH_SHORT).show();
     }
 
     private void actualizarAdmin(String n, String e, String u) {
@@ -266,12 +283,12 @@ public class ProfileActivity extends AppCompatActivity {
         layout.setPadding(50, 40, 50, 10);
 
         final EditText etOld = new EditText(this);
-        etOld.setHint("Actual");
+        etOld.setHint("Contraseña Actual");
         etOld.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         layout.addView(etOld);
 
         final EditText etNew = new EditText(this);
-        etNew.setHint("Nueva");
+        etNew.setHint("Nueva Contraseña");
         etNew.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         layout.addView(etNew);
 
@@ -283,7 +300,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void verifyAndUpdatePassword(String oldPass, String newPass) {
         if (newPass.length() < 4) {
-            Toast.makeText(this, "Demasiado corta", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "La contraseña nueva es muy corta", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -304,6 +321,6 @@ public class ProfileActivity extends AppCompatActivity {
             success = true;
         }
 
-        Toast.makeText(this, success ? "Éxito" : "Error", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, success ? "Contraseña actualizada" : "Contraseña actual incorrecta", Toast.LENGTH_SHORT).show();
     }
 }

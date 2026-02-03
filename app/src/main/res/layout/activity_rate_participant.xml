@@ -3,45 +3,62 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_dark"
-    android:gravity="center"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:padding="32dp">
+    android:padding="24dp">
 
     <ImageView
         android:id="@+id/ivRatePhoto"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="12dp"
         android:src="@drawable/ic_default_avatar" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Votar a"
+        android:text="Estás votando a"
         android:textColor="@color/text_secondary"
-        android:textSize="16sp" />
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/tvRateName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="24dp"
         android:text="Nombre Participante"
         android:textColor="@color/white"
-        android:textSize="24sp"
+        android:textSize="22sp"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="Selecciona Gala:"
-        android:textColor="@color/white" />
+        android:layout_marginBottom="4dp"
+        android:text="Edición:"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp" />
+
+    <Spinner
+        android:id="@+id/spinnerEdiciones"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/edittext_background" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Gala:"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp" />
 
     <Spinner
         android:id="@+id/spinnerActiveGala"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="48dp"
         android:layout_marginBottom="24dp"
         android:background="@drawable/edittext_background" />
 
@@ -51,7 +68,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:text="Puntuación: 0/5"
-        android:textColor="@color/text_secondary"
+        android:textColor="@color/white"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -59,17 +76,18 @@
         android:id="@+id/ratingBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="24dp"
         android:numStars="5"
         android:stepSize="1"
-        android:theme="@style/Theme.AppCompat" />
+        android:theme="@style/Theme.AppCompat"
+        android:progressTint="@color/colorPrimary" />
 
     <Button
         android:id="@+id/btnSubmitRating"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:backgroundTint="@color/colorPrimary"
-        android:text="Enviar Voto"
+        android:text="Confirmar Voto"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold" />
@@ -78,13 +96,11 @@
         android:id="@+id/tvBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:clickable="true"
         android:focusable="true"
         android:padding="12dp"
-        android:text="← Volver atrás"
-        android:textColor="@color/text_secondary"
-        android:textSize="14sp" />
+        android:text="Cancelar"
+        android:textColor="@color/text_secondary" />
 
 </LinearLayout>

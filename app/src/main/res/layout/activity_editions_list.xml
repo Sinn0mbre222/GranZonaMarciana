@@ -1,21 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B0E14"
+    android:background="@color/background_dark"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp">
 
-    <TextView
-        android:id="@+id/titleEditions"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:text="EDICIONES DISPONIBLES"
-        android:textColor="#FF5722"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:orientation="vertical"
+        android:layout_marginBottom="24dp"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@android:drawable/ic_menu_gallery"
+            app:tint="@color/colorPrimary"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/titleEditions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="EDICIONES"
+            android:textColor="@color/white"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Selecciona una temporada para ver detalles"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+    </LinearLayout>
 
     <ListView
         android:id="@+id/lvEditions"
@@ -23,7 +45,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:divider="@android:color/transparent"
-        android:dividerHeight="8dp" />
+        android:dividerHeight="12dp"
+        android:clipToPadding="false" />
 
     <TextView
         android:id="@+id/tvBack"
@@ -31,11 +54,13 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
         android:focusable="true"
         android:padding="12dp"
-        android:text="← Volver atrás"
-        android:textColor="@color/text_secondary"
-        android:textSize="14sp" />
+        android:text="← VOLVER AL MENÚ"
+        android:textColor="@color/colorPrimary"
+        android:textSize="13sp"
+        android:textStyle="bold" />
 
 </LinearLayout>

@@ -11,24 +11,62 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Calendario de Galas"
-            android:textColor="@color/white"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Calendario de Galas"
+                android:textColor="@color/white"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Resultados y próximas fechas"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+        </LinearLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabAddGala"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:src="@android:drawable/ic_input_add"
-            app:backgroundTint="@color/button_login_bg"
+            app:backgroundTint="@color/colorPrimary"
             app:tint="@color/white"
             android:contentDescription="Añadir Gala" />
     </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/edittext_background"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_agenda"
+            app:tint="@color/icon_tint" />
+
+        <Spinner
+            android:id="@+id/spinnerEdicionesGalas"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="12dp"
+            android:background="@null" />
+    </LinearLayout>
 
     <ListView
         android:id="@+id/lvGalas"
@@ -36,8 +74,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:divider="@android:color/transparent"
-        android:dividerHeight="8dp"
-        android:padding="8dp"
+        android:dividerHeight="12dp"
+        android:paddingHorizontal="24dp"
         android:clipToPadding="false" />
 
     <TextView
@@ -45,7 +83,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:clickable="true"
         android:focusable="true"
         android:padding="12dp"

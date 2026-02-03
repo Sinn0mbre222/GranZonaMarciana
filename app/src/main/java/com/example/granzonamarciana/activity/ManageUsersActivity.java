@@ -5,14 +5,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.Toast;
-
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.granzonamarciana.R;
@@ -31,14 +24,13 @@ public class ManageUsersActivity extends AppCompatActivity {
 
     private Spinner spinnerRoleFilter;
     private EditText etSearch;
-    private Button btnAddUser;
     private ListView lvUsers;
 
     private EspectadorService espectadorService;
     private ConcursanteService concursanteService;
 
     private UserAdapter adapter;
-    private List<DomainEntity> allUsers; // Lista maestra con todos
+    private List<DomainEntity> allUsers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,94 +41,86 @@ public class ManageUsersActivity extends AppCompatActivity {
         initServices();
         setupSpinner();
 
-        // Cargar usuarios
+        // Carga inicial de datos desde Room
         cargarTodosLosUsuarios();
 
-        // Botón Añadir (Pendiente de que creen RegistroActivity tus compañeros)
-        btnAddUser.setOnClickListener(v -> {
-            // Intent intent = new Intent(ManageUsersActivity.this, RegistroActivity.class);
-            // startActivity(intent);
-            Toast.makeText(ManageUsersActivity.this, "RegistroActivity aún no creada", Toast.LENGTH_SHORT).show();
-        });
-
-        // Buscador
+        // Buscador reactivo
         etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filtrar(s.toString(), spinnerRoleFilter.getSelectedItemPosition());
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                actualizarLista();
             }
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
 
-        // --- NUEVO: Click en la lista para ver detalle (READ ONLY) ---
+        // Click para ver detalle del usuario (solo lectura para el admin)
         lvUsers.setOnItemClickListener((parent, view, position, id) -> {
-            DomainEntity usuarioSeleccionado = adapter.getItem(position);
-
-            if (usuarioSeleccionado != null) {
-                Intent intent = new Intent(ManageUsersActivity.this, ProfileActivity.class);
-
-                // Pasamos ID y activamos modo lectura
-                intent.putExtra("TARGET_USER_ID", usuarioSeleccionado.getId());
+            DomainEntity seleccionado = (DomainEntity) parent.getItemAtPosition(position);
+            if (seleccionado != null) {
+                Intent intent = new Intent(this, ProfileActivity.class);
+                intent.putExtra("TARGET_USER_ID", seleccionado.getId());
                 intent.putExtra("READ_ONLY", true);
 
-                // Pasamos el Rol correcto
-                if (usuarioSeleccionado instanceof Concursante) {
-                    intent.putExtra("TARGET_USER_ROLE", TipoRol.CONCURSANTE.toString());
-                } else {
-                    intent.putExtra("TARGET_USER_ROLE", TipoRol.ESPECTADOR.toString());
-                }
+                String rol = (seleccionado instanceof Concursante) ?
+                        TipoRol.CONCURSANTE.name() : TipoRol.ESPECTADOR.name();
+                intent.putExtra("TARGET_USER_ROLE", rol);
 
                 startActivity(intent);
             }
         });
+
+        findViewById(R.id.tvBack).setOnClickListener(v -> finish());
     }
 
     private void initViews() {
         spinnerRoleFilter = findViewById(R.id.spinnerRoleFilter);
         etSearch = findViewById(R.id.etSearchUser);
-        btnAddUser = findViewById(R.id.btnAddUser);
         lvUsers = findViewById(R.id.lvUsers);
     }
 
     private void initServices() {
         espectadorService = new EspectadorService(this);
         concursanteService = new ConcursanteService(this);
-        allUsers = new ArrayList<>();
     }
 
     private void setupSpinner() {
-        String[] roles = {"Todos", "Espectadores", "Concursantes"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, roles);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerRoleFilter.setAdapter(adapter);
+        String[] roles = {"Todos los Usuarios", "Solo Espectadores", "Solo Concursantes"};
+
+        // Cambiamos a android.R.layout.simple_spinner_item temporalmente para probar
+        // O usamos el tuyo asegurándonos de que funcione:
+        ArrayAdapter<String> spinAdapter = new ArrayAdapter<>(
+                this,
+                R.layout.spinner_rol_item, // Tu layout personalizado (texto blanco)
+                roles
+        );
+
+        // Esta línea es VITAL para que cuando pulses el spinner se vea la lista
+        spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        spinnerRoleFilter.setAdapter(spinAdapter);
 
         spinnerRoleFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                filtrar(etSearch.getText().toString(), position);
+            public void onItemSelected(AdapterView<?> p, View v, int pos, long id) {
+                // Log de diagnóstico para ver si detecta el cambio
+                android.util.Log.d("DEBUG_SPINNER", "Seleccionado pos: " + pos);
+                actualizarLista();
             }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+            @Override public void onNothingSelected(AdapterView<?> p) {}
         });
     }
 
     private void cargarTodosLosUsuarios() {
-        allUsers.clear();
-
-        // 1. Cargar Espectadores
+        // Obtenemos espectadores y actualizamos lista global
         espectadorService.obtenerTodos().observe(this, espectadores -> {
             if (espectadores != null) {
-                // Limpiamos previos de espectadores para no duplicar si se llama varias veces
                 allUsers.removeIf(u -> u instanceof Espectador);
                 allUsers.addAll(espectadores);
                 actualizarLista();
             }
         });
 
-        // 2. Cargar Concursantes
+        // Obtenemos concursantes y actualizamos lista global
         concursanteService.obtenerTodos().observe(this, concursantes -> {
             if (concursantes != null) {
                 allUsers.removeIf(u -> u instanceof Concursante);
@@ -147,37 +131,31 @@ public class ManageUsersActivity extends AppCompatActivity {
     }
 
     private void actualizarLista() {
-        filtrar(etSearch.getText().toString(), spinnerRoleFilter.getSelectedItemPosition());
-    }
+        String busqueda = etSearch.getText().toString().toLowerCase().trim();
+        int filtroRol = spinnerRoleFilter.getSelectedItemPosition();
 
-    private void filtrar(String texto, int rolPos) {
         List<DomainEntity> filtrados = new ArrayList<>();
-        String busqueda = texto.toLowerCase();
 
         for (DomainEntity u : allUsers) {
-            boolean cumpleNombre = false;
-            boolean cumpleRol = false;
-
             String nombre = "";
-            if (u instanceof Espectador) {
-                nombre = ((Espectador) u).getNombre();
-            } else if (u instanceof Concursante) {
-                nombre = ((Concursante) u).getNombre();
-            }
+            boolean esConcu = (u instanceof Concursante);
 
-            if (nombre != null && nombre.toLowerCase().contains(busqueda)) {
-                cumpleNombre = true;
-            }
+            // Casting dinámico para obtener el nombre independientemente de la entidad
+            if (esConcu) nombre = ((Concursante) u).getNombre();
+            else nombre = ((Espectador) u).getNombre();
 
-            if (rolPos == 0) cumpleRol = true;
-            else if (rolPos == 1 && u instanceof Espectador) cumpleRol = true;
-            else if (rolPos == 2 && u instanceof Concursante) cumpleRol = true;
+            // Aplicación de filtros combinados
+            boolean coincideNombre = nombre != null && nombre.toLowerCase().contains(busqueda);
+            boolean coincideRol = (filtroRol == 0) ||
+                    (filtroRol == 1 && !esConcu) ||
+                    (filtroRol == 2 && esConcu);
 
-            if (cumpleNombre && cumpleRol) {
+            if (coincideNombre && coincideRol) {
                 filtrados.add(u);
             }
         }
 
+        // Refrescamos el adaptador con la lista filtrada
         adapter = new UserAdapter(this, R.layout.item_user, filtrados);
         lvUsers.setAdapter(adapter);
     }

@@ -17,7 +17,7 @@ import com.example.granzonamarciana.entity.Edicion;
 import com.example.granzonamarciana.entity.Gala;
 import com.example.granzonamarciana.service.ConcursanteService;
 import com.example.granzonamarciana.service.EdicionService;
-import com.example.granzonamarciana.service.GalaService; // Importante
+import com.example.granzonamarciana.service.GalaService;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,15 +27,16 @@ public class ParticipantsListActivity extends AppCompatActivity {
     private ListView lvParticipantes;
     private EditText etBuscar;
     private ImageButton btnBuscar;
+    private LinearLayout layoutFilterGala; // Referencia al layout del spinner de galas
 
     private EdicionService edicionService;
     private ConcursanteService concursanteService;
-    private GalaService galaService; // Nuevo servicio
+    private GalaService galaService;
 
     private ParticipantAdapter adapter;
     private List<Concursante> listaConcursantesFull = new ArrayList<>();
     private List<Edicion> listaEdiciones = new ArrayList<>();
-    private List<Gala> listaGalas = new ArrayList<>(); // Lista para el spinner de galas
+    private List<Gala> listaGalas = new ArrayList<>();
 
     // Variable para saber quién está usando la app
     private String userRole;
@@ -54,7 +55,7 @@ public class ParticipantsListActivity extends AppCompatActivity {
         // Inicializar servicios
         edicionService = new EdicionService(this);
         concursanteService = new ConcursanteService(this);
-        galaService = new GalaService(getApplication()); // Inicializamos GalaService
+        galaService = new GalaService(getApplication());
 
         cargarEdiciones();
 
@@ -68,7 +69,7 @@ public class ParticipantsListActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        // 2. CONFIGURAR CLICK CON LÓGICA DE ROLES
+        // 3. CONFIGURAR CLICK CON LÓGICA DE ROLES
         lvParticipantes.setOnItemClickListener((parent, view, position, id) -> {
             Concursante seleccionado = (Concursante) parent.getAdapter().getItem(position);
 
@@ -78,21 +79,30 @@ public class ParticipantsListActivity extends AppCompatActivity {
                 if ("ESPECTADOR".equals(userRole)) {
                     // CASO A: Espectador -> Va a VOTAR
 
-                    // VALIDACIÓN IMPORTANTE: Necesitamos saber en qué Gala votar
+                    // Validar selección de Gala
                     int galaPos = spinnerGalas.getSelectedItemPosition();
                     if (listaGalas.isEmpty() || galaPos < 0) {
-                        Toast.makeText(this, "Selecciona una gala para poder votar", Toast.LENGTH_SHORT).show();
-                        return; // Detenemos si no hay gala
+                        Toast.makeText(this, "Selecciona una gala válida para votar", Toast.LENGTH_SHORT).show();
+                        return;
                     }
 
                     Gala galaSeleccionada = listaGalas.get(galaPos);
 
+                    // Validar selección de Edición
+                    int edicionPos = spinnerEdiciones.getSelectedItemPosition();
+                    if (listaEdiciones.isEmpty() || edicionPos < 0) {
+                        return; // Seguridad extra
+                    }
+                    int idEdicionActual = listaEdiciones.get(edicionPos).getId();
+
                     Log.d("NAVEGACION", "Usuario ESPECTADOR -> Yendo a RateParticipantActivity");
                     intent = new Intent(ParticipantsListActivity.this, RateParticipantActivity.class);
 
+                    // Extras para pre-rellenar la pantalla de votación
                     intent.putExtra("CONCURSANTE_NOMBRE", seleccionado.getNombre() + " " + seleccionado.getPrimerApellido());
                     intent.putExtra("CONCURSANTE_FOTO", seleccionado.getImagenUrl());
-                    intent.putExtra("GALA_ID", galaSeleccionada.getId()); // Pasamos el ID de la gala del spinner
+                    intent.putExtra("GALA_EDICION_ID", idEdicionActual); // Ahora sí tenemos el ID correcto
+                    intent.putExtra("GALA_ID", galaSeleccionada.getId());
 
                 } else {
                     // CASO B: Invitado/Admin/Concursante -> Va a PERFIL PÚBLICO
@@ -100,8 +110,9 @@ public class ParticipantsListActivity extends AppCompatActivity {
                     intent = new Intent(ParticipantsListActivity.this, ParticipantPublicActivity.class);
                 }
 
-                // ID siempre es necesario en ambos casos
+                // ID del concursante (Necesario siempre)
                 intent.putExtra("CONCURSANTE_ID", seleccionado.getId());
+
                 startActivity(intent);
 
             } else {
@@ -114,10 +125,11 @@ public class ParticipantsListActivity extends AppCompatActivity {
 
     private void initViews() {
         spinnerEdiciones = findViewById(R.id.spinnerEdiciones);
-        spinnerGalas = findViewById(R.id.spinnerGalas); // Nuevo spinner
+        spinnerGalas = findViewById(R.id.spinnerGalas);
         lvParticipantes = findViewById(R.id.lvParticipantes);
         etBuscar = findViewById(R.id.etBuscarParticipante);
         btnBuscar = findViewById(R.id.btnEjecutarBusqueda);
+        layoutFilterGala = findViewById(R.id.layoutFilterGala); // Asegúrate de tener este ID en el XML
     }
 
     private void cargarEdiciones() {
@@ -146,7 +158,6 @@ public class ParticipantsListActivity extends AppCompatActivity {
         });
     }
 
-    // Método nuevo para cargar las galas en el segundo spinner
     private void cargarGalas(int idEdicion) {
         galaService.getGalasByEdicion(idEdicion).observe(this, galas -> {
             listaGalas = (galas != null) ? galas : new ArrayList<>();
@@ -158,6 +169,10 @@ public class ParticipantsListActivity extends AppCompatActivity {
 
             if (labels.isEmpty()) {
                 labels.add("Sin galas disponibles");
+                // Opcional: Deshabilitar spinner si no hay galas
+                spinnerGalas.setEnabled(false);
+            } else {
+                spinnerGalas.setEnabled(true);
             }
 
             ArrayAdapter<String> adapterGalas = new ArrayAdapter<>(this, R.layout.spinner_rol_item, labels);
@@ -185,7 +200,8 @@ public class ParticipantsListActivity extends AppCompatActivity {
             filtrados.addAll(listaConcursantesFull);
         } else {
             for (Concursante c : listaConcursantesFull) {
-                if ((c.getNombre() + " " + c.getPrimerApellido()).toLowerCase().contains(busqueda))
+                String nombreCompleto = (c.getNombre() + " " + c.getPrimerApellido()).toLowerCase();
+                if (nombreCompleto.contains(busqueda))
                     filtrados.add(c);
             }
         }

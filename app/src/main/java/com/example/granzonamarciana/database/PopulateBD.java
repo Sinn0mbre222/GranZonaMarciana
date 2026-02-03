@@ -82,12 +82,10 @@ public class PopulateBD {
         galaService.insert(new Gala(1, LocalDate.of(2026, 4, 15)), inicio, fin);
         galaService.insert(new Gala(1, LocalDate.of(2026, 5, 15)), inicio, fin);
 
-        // CORRECCIÓN PUNTUACIÓN: El constructor pide (espectadorId, concursanteId, galaId, valor, fechaVoto)
-        // Eliminado el String del comentario que no existe en tu entidad
-        puntuacionService.puntuar(new Puntuacion(1, 1, 1, 9, LocalDate.now()));
-        puntuacionService.puntuar(new Puntuacion(1, 1, 2, 8, LocalDate.now()));
-        puntuacionService.puntuar(new Puntuacion(1, 2, 1, 7, LocalDate.now()));
-        puntuacionService.puntuar(new Puntuacion(1, 3, 1, 10, LocalDate.now()));
+        puntuacionService.puntuar(new Puntuacion(1, 1, 1, 5, LocalDate.now()));
+        puntuacionService.puntuar(new Puntuacion(1, 1, 2, 4, LocalDate.now()));
+        puntuacionService.puntuar(new Puntuacion(1, 2, 1, 3, LocalDate.now()));
+        puntuacionService.puntuar(new Puntuacion(1, 3, 1, 5, LocalDate.now()));
 
         noticiaService.insertarNoticia(new Noticia(LocalDate.now(),
                 "La base marciana abre sus puertas a los nuevos elegidos. ¡La competencia promete ser feroz!",
@@ -108,5 +106,9 @@ public class PopulateBD {
         noticiaService.insertarNoticia(new Noticia(LocalDate.now(),
                 "Mañana se celebra la primera gran gala. Las votaciones están que arden.",
                 "CUENTA ATRÁS PARA LA GALA", IMG_RETRATO, 1, 1));
+    }
+
+    public void deleteBD(Context c){
+        c.deleteDatabase("granzona_db");
     }
 }

@@ -2,6 +2,7 @@ package com.example.granzonamarciana.dao;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import com.example.granzonamarciana.entity.Gala;
@@ -12,6 +13,9 @@ public interface GalaDao {
 
     @Insert
     void insert(Gala gala);
+
+    @Delete
+    void delete(Gala gala);
 
     // Consultar todas las galas de una edición específica
     @Query("SELECT * FROM galas WHERE editionId = :editionId ORDER BY fecha ASC")

@@ -26,11 +26,14 @@ public class PuntuacionService {
         return puntuacionDao.haVotado(galaId, espectadorId, concursanteId);
     }
     public void puntuar(final Puntuacion p) {
+
+        if (p.getValor() < 1 || p.getValor() > 5) {
+            return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                // Room detectará automáticamente si intentas insertar un duplicado
-                // gracias a la Primary Key compuesta que pusimos en la Entidad.
+
                 puntuacionDao.insert(p);
             }
         }).start();

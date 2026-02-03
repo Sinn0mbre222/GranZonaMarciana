@@ -27,6 +27,10 @@ public class GalaService {
         return true;
     }
 
+    public void eliminar(Gala gala) {
+        new Thread(() -> galaDao.delete(gala)).start();
+    }
+
     public LiveData<List<Gala>> getGalasByEdicion(int editionId) {
         return galaDao.findByEdition(editionId);
     }

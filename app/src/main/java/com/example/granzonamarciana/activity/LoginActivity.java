@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
         //Comprobar sesión y poblar BD
         comprobarSiEstaLogueado();
 
-        //populateBD();
+        populateBD();
 
         //Inicializar Servicios
         administradorService = new AdministradorService(this);
@@ -199,9 +199,19 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
     private void populateBD() {
-        PopulateBD populateBD = new PopulateBD(this);
-        populateBD.deleteBD(this);
-        populateBD.executeFullPopulate();
+        SharedPreferences prefs = getSharedPreferences("ConfiguracionApp", MODE_PRIVATE);
+        boolean yaPoblada = prefs.getBoolean("db_poblada", false);
 
+        if (!yaPoblada) {
+            new Thread(() -> {
+                PopulateBD populate = new PopulateBD(this);
+                // Solo borramos y poblamos la PRIMERA vez
+                populate.deleteBD(this);
+                populate.executeFullPopulate();
+
+                // Guardamos que ya se hizo
+                prefs.edit().putBoolean("db_poblada", true).apply();
+            }).start();
+        }
     }
 }

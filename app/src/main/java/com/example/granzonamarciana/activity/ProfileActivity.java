@@ -29,66 +29,81 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Locale;
 
+// Esta Activity sirve para dos cosas:
+// 1. Ver y editar "MI PERFIL" (usuario logueado).
+// 2. Ver el perfil de OTRO usuario en modo "SOLO LECTURA" (cuando entra un Admin).
 public class ProfileActivity extends AppCompatActivity {
 
+    // Variables para los elementos visuales de la pantalla
     private EditText etNombre, etApellido1, etApellido2, etEmail, etTelefono, etImageUrl;
     private TextView tvUsername, tvUserRole, tvJoinDate, tvRatingMedia;
     private ImageView ivProfileImage;
     private Button btnGuardar, btnCambiarPass;
     private LinearLayout layoutEstadisticas;
 
+    // Servicios para conectar con la Base de Datos
     private AdministradorService adminService;
     private ConcursanteService concursanteService;
     private EspectadorService espectadorService;
     private PuntuacionService puntuacionService;
 
+    // Objetos para guardar temporalmente los datos del usuario cargado
     private Administrador currentAdmin;
     private Concursante currentConcursante;
     private Espectador currentEspectador;
 
-    private String userRole;
-    private int userId;
-    private boolean isReadOnly = false;
+    // Datos de control
+    private String userRole; // Rol del usuario (ADMINISTRADOR, CONCURSANTE, ESPECTADOR)
+    private int userId;      // ID del usuario
+    private boolean isReadOnly = false; // Bandera para saber si bloqueamos la edición
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_detail);
 
+        // Inicializamos vistas y servicios de BD
         initViews();
         initServices();
 
-        // 1. Comprobar si viene por Intent (Modo Lectura / Admin viendo a otro)
+        // 1. Comprobar si venimos desde otra pantalla (ej. Admin pulsando en lista de usuarios)
+        // Si el Intent trae datos, significa que estamos en modo "Ver perfil de otro"
         int intentId = getIntent().getIntExtra("TARGET_USER_ID", -1);
         String intentRole = getIntent().getStringExtra("TARGET_USER_ROLE");
 
         if (intentId != -1 && intentRole != null) {
+            // MODO SOLO LECTURA (Admin viendo a otro)
             userId = intentId;
             userRole = intentRole;
-            isReadOnly = true;
-            activarModoLectura();
+            isReadOnly = true; // Activamos el bloqueo
+            activarModoLectura(); // Bloqueamos los campos
         } else {
-            // 2. Cargar mi propia sesión (Modo Edición)
+            // 2. Si no hay Intent, cargamos la sesión actual (SharedPreferences)
+            // MODO EDICIÓN (Mi propio perfil)
             SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
             userId = prefs.getInt("id", -1);
             userRole = prefs.getString("rol", "");
-            isReadOnly = false;
+            isReadOnly = false; // Permitimos editar
         }
 
+        // Si no se encuentra usuario, cerramos la pantalla para evitar errores
         if (userId == -1) {
             Toast.makeText(this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
+        // Cargamos los datos desde la Base de Datos
         loadUserData();
 
+        // Solo activamos los botones de guardar si NO es modo lectura
         if (!isReadOnly) {
             btnGuardar.setOnClickListener(v -> saveChanges());
             btnCambiarPass.setOnClickListener(v -> showChangePasswordDialog());
         }
     }
 
+    // Vincula las variables con los IDs del XML
     private void initViews() {
         etNombre = findViewById(R.id.etName);
         etApellido1 = findViewById(R.id.etApellido1);
@@ -108,12 +123,14 @@ public class ProfileActivity extends AppCompatActivity {
         btnGuardar = findViewById(R.id.btnGuardar);
         btnCambiarPass = findViewById(R.id.btnCambiarPass);
 
+        // Botón volver (flecha atrás)
         Button btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
         }
     }
 
+    // Crea las instancias de los servicios para poder hacer consultas
     private void initServices() {
         adminService = new AdministradorService(this);
         concursanteService = new ConcursanteService(this);
@@ -121,6 +138,7 @@ public class ProfileActivity extends AppCompatActivity {
         puntuacionService = new PuntuacionService(this);
     }
 
+    // Oculta botones y bloquea la escritura en los campos de texto
     private void activarModoLectura() {
         if (btnGuardar != null) btnGuardar.setVisibility(View.GONE);
         if (btnCambiarPass != null) btnCambiarPass.setVisibility(View.GONE);
@@ -133,6 +151,7 @@ public class ProfileActivity extends AppCompatActivity {
         deshabilitarEditText(etImageUrl);
     }
 
+    // Metodo auxiliar para quitar el foco y cursor de un campo de texto
     private void deshabilitarEditText(EditText et) {
         if (et != null) {
             et.setFocusable(false);
@@ -142,12 +161,13 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    // Carga la información del usuario dependiendo de su ROL
     private void loadUserData() {
         switch (userRole) {
             case "ADMINISTRADOR":
                 adminService.buscarAdministradorPorId(userId).observe(this, admin -> {
                     if (admin != null) {
-                        currentAdmin = admin;
+                        currentAdmin = admin; // Guardamos referencia para luego actualizar
                         tvUsername.setText(admin.getUsername());
                         tvUserRole.setText("Administrador");
                         tvJoinDate.setText(String.valueOf(admin.getFechaRegistro()));
@@ -165,7 +185,7 @@ public class ProfileActivity extends AppCompatActivity {
                         tvJoinDate.setText(String.valueOf(concu.getFechaRegistro()));
                         populateFields(concu.getNombre(), concu.getPrimerApellido(), concu.getSegundoApellido(), concu.getEmail(), concu.getTelefono(), concu.getImagenUrl());
 
-                        // Mostrar estadísticas solo para concursantes
+                        // Si es concursante, mostramos su estadística de nota media
                         layoutEstadisticas.setVisibility(View.VISIBLE);
                         cargarMediaConcursante(concu.getId());
                     }
@@ -186,6 +206,7 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    // Calcula la media de estrellas recibidas por un concursante
     private void cargarMediaConcursante(int concursanteId) {
         puntuacionService.obtenerHistorialConcursante(concursanteId).observe(this, puntuaciones -> {
             if (puntuaciones != null && !puntuaciones.isEmpty()) {
@@ -194,6 +215,7 @@ public class ProfileActivity extends AppCompatActivity {
                     suma += p.getValor();
                 }
                 double media = suma / puntuaciones.size();
+                // Formateamos a 1 decimal (ej. 4.5 ★)
                 tvRatingMedia.setText(String.format(Locale.getDefault(), "%.1f ★", media));
             } else {
                 tvRatingMedia.setText("Sin votos");
@@ -201,6 +223,7 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    // Rellena los campos de texto y carga la imagen con Picasso
     private void populateFields(String nombre, String ap1, String ap2, String email, String tlf, String imgUrl) {
         etNombre.setText(nombre);
         etApellido1.setText(ap1);
@@ -209,29 +232,34 @@ public class ProfileActivity extends AppCompatActivity {
         etTelefono.setText(tlf);
         etImageUrl.setText(imgUrl);
 
+        // Si hay URL válida, Picasso la descarga y la pone en el ImageView
         if (imgUrl != null && !imgUrl.isEmpty() && (imgUrl.startsWith("http"))) {
             Picasso.get()
                     .load(imgUrl)
-                    .placeholder(R.drawable.ic_default_avatar)
-                    .error(R.drawable.ic_default_avatar)
+                    .placeholder(R.drawable.ic_default_avatar) // Imagen mientras carga
+                    .error(R.drawable.ic_default_avatar)       // Imagen si falla
                     .into(ivProfileImage);
         } else {
             ivProfileImage.setImageResource(R.drawable.ic_default_avatar);
         }
     }
 
+    // Guarda los cambios realizados en los EditText en la Base de Datos
     private void saveChanges() {
-        if (isReadOnly) return;
+        if (isReadOnly) return; // Seguridad extra
 
+        // Obtenemos los textos escritos
         String nombre = etNombre.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String url = etImageUrl.getText().toString().trim();
 
+        // Validación básica
         if (nombre.isEmpty() || email.isEmpty()) {
             Toast.makeText(this, "Nombre y Email son obligatorios", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Actualizamos el objeto correspondiente según el rol
         if (userRole.equals("ADMINISTRADOR") && currentAdmin != null) {
             actualizarAdmin(nombre, email, url);
         } else if (userRole.equals("CONCURSANTE") && currentConcursante != null) {
@@ -242,6 +270,7 @@ public class ProfileActivity extends AppCompatActivity {
         Toast.makeText(this, "Perfil actualizado", Toast.LENGTH_SHORT).show();
     }
 
+    // Métodos específicos para actualizar cada tipo de entidad en la BD
     private void actualizarAdmin(String n, String e, String u) {
         currentAdmin.setNombre(n);
         currentAdmin.setPrimerApellido(etApellido1.getText().toString());
@@ -272,12 +301,14 @@ public class ProfileActivity extends AppCompatActivity {
         espectadorService.actualizar(currentEspectador);
     }
 
+    // Muestra un diálogo emergente (popup) para cambiar la contraseña
     private void showChangePasswordDialog() {
         if (isReadOnly) return;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Seguridad");
 
+        // Creamos el diseño del popup dinámicamente
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(50, 40, 50, 10);
@@ -298,15 +329,18 @@ public class ProfileActivity extends AppCompatActivity {
         builder.show();
     }
 
+    // Verifica la contraseña antigua con BCrypt y encripta la nueva antes de guardar
     private void verifyAndUpdatePassword(String oldPass, String newPass) {
         if (newPass.length() < 4) {
             Toast.makeText(this, "La contraseña nueva es muy corta", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Generamos el hash de la nueva contraseña
         String hashed = BCrypt.hashpw(newPass, BCrypt.gensalt());
         boolean success = false;
 
+        // Comprobamos la contraseña antigua usando BCrypt.checkpw
         if (userRole.equals("ADMINISTRADOR") && BCrypt.checkpw(oldPass, currentAdmin.getPassword())) {
             currentAdmin.setPassword(hashed);
             adminService.actualizarAdministrador(currentAdmin);

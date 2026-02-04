@@ -26,16 +26,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// Esta pantalla muestra el RANKING (clasificación) de los concursantes en una gala específica.
+// Se ordenan de mayor a menor puntuación media.
 public class GalaScoresActivity extends AppCompatActivity {
 
-    private Spinner spinnerGalas;
-    private ListView lvRanking;
+    // Elementos de la interfaz
+    private Spinner spinnerGalas; // Desplegable para elegir qué gala ver
+    private ListView lvRanking;   // La lista con los resultados
+    private TextView tvBack;      // Botón volver
+
+    // Servicios para conectar con la base de datos
     private GalaService galaService;
     private PuntuacionService puntuacionService;
-    private ConcursanteService concursanteService; // Añadido para traer a todos los concursantes
+    private ConcursanteService concursanteService;
+
+    // Datos temporales
     private List<Gala> listaGalas;
-    private TextView tvBack;
-    private int editionId; // Variable global para facilitar el acceso
+    private int editionId; // ID de la edición actual (para filtrar galas y concursantes)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,15 +57,15 @@ public class GalaScoresActivity extends AppCompatActivity {
         puntuacionService = new PuntuacionService(this);
         concursanteService = new ConcursanteService(this);
 
-        // 3. Obtener IDs del Intent
-        // Intentamos coger el editionId. Si no viene, usamos 1 por defecto
+        // 3. Obtener IDs enviados desde la pantalla anterior (si los hay)
+        // Intentamos coger el editionId. Si no viene, usamos 1 por defecto para que no falle.
         editionId = getIntent().getIntExtra("EDITION_ID", 1);
         int initialGalaId = getIntent().getIntExtra("GALA_ID", -1);
 
         // 4. Configurar botón volver
         tvBack.setOnClickListener(v -> finish());
 
-        // 5. Cargar galas y posicionar el Spinner
+        // 5. Cargar las galas en el spinner y seleccionar la inicial si corresponde
         cargarGalas(editionId, initialGalaId);
     }
 
@@ -68,6 +75,7 @@ public class GalaScoresActivity extends AppCompatActivity {
         tvBack = findViewById(R.id.tvBack);
     }
 
+    // Busca las galas de esta edición y rellena el Spinner
     private void cargarGalas(int editionId, int initialGalaId) {
         galaService.getGalasByEdicion(editionId).observe(this, galas -> {
             if (galas != null && !galas.isEmpty()) {
@@ -75,11 +83,12 @@ public class GalaScoresActivity extends AppCompatActivity {
                 List<String> nombresGalas = new ArrayList<>();
                 int positionToSelect = 0;
 
+                // Creamos la lista de nombres para el desplegable (Ej: "Gala 1 (2023-10-01)")
                 for (int i = 0; i < galas.size(); i++) {
                     Gala g = galas.get(i);
                     nombresGalas.add("Gala " + (i + 1) + " (" + g.getFecha() + ")");
 
-                    // Posicionar el spinner en la gala que seleccionamos en la actividad anterior
+                    // Si venimos de votar en una gala concreta, hacemos que el spinner la seleccione automáticamente
                     if (g.getId() == initialGalaId) {
                         positionToSelect = i;
                     }
@@ -89,8 +98,10 @@ public class GalaScoresActivity extends AppCompatActivity {
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinnerGalas.setAdapter(adapter);
 
+                // Seleccionamos la gala por defecto o la que venía del intent
                 spinnerGalas.setSelection(positionToSelect);
 
+                // Listener: Cuando el usuario cambia la gala, recalculamos el ranking
                 spinnerGalas.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -108,47 +119,57 @@ public class GalaScoresActivity extends AppCompatActivity {
     }
 
     /**
-     * Muestra el ranking de TODOS los concursantes de la edición.
-     * Si no tienen votos en esta gala, aparecerán con un 0.0.
+     * LÓGICA PRINCIPAL DEL RANKING:
+     * 1. Trae a TODOS los concursantes (incluso los que tienen 0 votos).
+     * 2. Trae los votos de la gala seleccionada.
+     * 3. Calcula la media de cada uno.
+     * 4. Ordena la lista de mejor a peor nota.
      */
     private void actualizarRanking(int galaId) {
-        // Obtenemos todos los concursantes que pertenecen a la edición actual
+        // Paso 1: Obtener todos los concursantes de la edición (para que nadie falte en la lista)
         concursanteService.obtenerPorEdicion(editionId).observe(this, todosLosConcursantes -> {
             if (todosLosConcursantes == null) return;
 
-            // Obtenemos las puntuaciones que existen en esta gala
+            // Paso 2: Obtener las puntuaciones reales de esta gala
             puntuacionService.obtenerResultadosGala(galaId).observe(this, votos -> {
 
-                Map<Integer, Double> sumaNotas = new HashMap<>();
-                Map<Integer, Integer> contadorVotos = new HashMap<>();
-                Map<Integer, Double> mediasFinales = new HashMap<>();
+                // Mapas auxiliares para hacer los cálculos matemáticos
+                Map<Integer, Double> sumaNotas = new HashMap<>();    // ID Concursante -> Suma total de estrellas
+                Map<Integer, Integer> contadorVotos = new HashMap<>(); // ID Concursante -> Cantidad de votos
+                Map<Integer, Double> mediasFinales = new HashMap<>();  // ID Concursante -> Nota Media Final
 
-                // 1. Procesar los votos recibidos (POJO PuntuacionConConcursante)
+                // Procesamos los votos (si hay)
                 if (votos != null) {
                     for (PuntuacionConConcursante item : votos) {
                         int id = item.concursante.getId();
+                        // Sumamos el valor del voto (ej: +5 estrellas)
                         sumaNotas.put(id, sumaNotas.getOrDefault(id, 0.0) + item.puntuacion.getValor());
+                        // Incrementamos el contador de votos (+1 voto)
                         contadorVotos.put(id, contadorVotos.getOrDefault(id, 0) + 1);
                     }
                 }
 
-                // 2. Calcular medias para todos. Si no está en el mapa de votos, su media es 0.0
+                // Paso 3: Calcular medias para TODOS los concursantes
                 for (Concursante c : todosLosConcursantes) {
                     int id = c.getId();
+                    // Si tiene votos, calculamos: Suma / Cantidad
                     if (contadorVotos.containsKey(id) && contadorVotos.get(id) > 0) {
                         double media = sumaNotas.get(id) / contadorVotos.get(id);
                         mediasFinales.put(id, media);
                     } else {
-                        mediasFinales.put(id, 0.0); // Concursante sin votos en esta gala
+                        // Si no tiene votos, le ponemos un 0.0 para que salga al final pero salga
+                        mediasFinales.put(id, 0.0);
                     }
                 }
 
-                // 3. Ordenar la lista de mayor a menor puntuación media
+                // Paso 4: Ordenar la lista. Usamos un "Comparator" personalizado.
+                // Compara las medias finales para poner primero a los que tienen más nota.
                 Collections.sort(todosLosConcursantes, (c1, c2) ->
                         mediasFinales.get(c2.getId()).compareTo(mediasFinales.get(c1.getId()))
                 );
 
-                // 4. Actualizar el adaptador con la lista completa y el mapa de medias
+                // Paso 5: Mostrar en pantalla usando el Adaptador personalizado
+                // Le pasamos la lista ordenada Y el mapa de medias para que pinte la nota
                 GalaScoreAdapter adapter = new GalaScoreAdapter(this, R.layout.item_gala_score, todosLosConcursantes, mediasFinales);
                 lvRanking.setAdapter(adapter);
             });

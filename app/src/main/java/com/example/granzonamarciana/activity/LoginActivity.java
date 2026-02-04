@@ -225,12 +225,12 @@ public class LoginActivity extends AppCompatActivity {
 
     // Lógica de precarga de la Base de Datos
     private void populateBD() {
-        PopulateBD populate = new PopulateBD(this);
+        /*PopulateBD populate = new PopulateBD(this);
         // Limpia cualquier residuo y ejecuta los inserts de las entidades
         populate.deleteBD(this);
-        populate.executeFullPopulate();
+        populate.executeFullPopulate();*/
 
-        /*// Se usa un archivo de preferencias distinto para controlar si la BD ya fue poblada
+        // Se usa un archivo de preferencias distinto para controlar si la BD ya fue poblada
         SharedPreferences prefs = getSharedPreferences("ConfiguracionApp", MODE_PRIVATE);
         boolean yaPoblada = prefs.getBoolean("db_poblada", false);
 
@@ -245,6 +245,6 @@ public class LoginActivity extends AppCompatActivity {
                 // Marca la bandera como true para que no se repita en el próximo inicio
                 prefs.edit().putBoolean("db_poblada", true).apply();
             }).start();
-        }*/
+        }
     }
 }

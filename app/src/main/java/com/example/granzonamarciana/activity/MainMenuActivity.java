@@ -31,6 +31,8 @@ public class MainMenuActivity extends AppCompatActivity {
 
         // Cargar Sesión
         SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
+
+        //Se recoge el nombre del usuario del que esté logueado, en este caso va a ser el usuasrio invitado
         String nombreUsuario = prefs.getString("username", "Invitado");
         int userId = prefs.getInt("id", -1);
 

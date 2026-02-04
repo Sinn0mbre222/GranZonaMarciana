@@ -32,6 +32,7 @@ public class ApplyEditionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_apply_edition);
 
+        // Obtenemos el ID del usuario logueado desde SharedPreferences
         SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
         currentUserId = prefs.getInt("id", -1);
 
@@ -42,6 +43,7 @@ public class ApplyEditionActivity extends AppCompatActivity {
         spinnerEdiciones = findViewById(R.id.spinnerEdicionesApply);
         btnSubmitApplication = findViewById(R.id.btnSubmitApplication);
 
+        // Carga el Spinner con ediciones que aún no han terminado
         cargarEdicionesAbiertas();
 
         btnSubmitApplication.setOnClickListener(v -> enviarSolicitud());
@@ -55,6 +57,7 @@ public class ApplyEditionActivity extends AppCompatActivity {
                 List<String> etiquetas = new ArrayList<>();
                 LocalDate hoy = LocalDate.now();
 
+                // Filtramos las ediciones cuya fecha final no haya pasado todavía
                 for (Edicion ed : ediciones) {
                     if (ed.getFechaFinal() != null && !ed.getFechaFinal().isBefore(hoy)) {
                         listaEdicionesDisponibles.add(ed);
@@ -62,15 +65,16 @@ public class ApplyEditionActivity extends AppCompatActivity {
                     }
                 }
 
+                // Cargamos el adaptador para el Spinner
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_rol_item, etiquetas);
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinnerEdiciones.setAdapter(adapter);
 
+                // Cada vez que el usuario elige una edición, comprobamos su estado
                 spinnerEdiciones.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         edicionSeleccionada = listaEdicionesDisponibles.get(position);
-                        // ¡AQUÍ ES DONDE USAMOS LOS MÉTODOS DEL SERVICE!
                         configurarBotonDinamico();
                     }
                     @Override public void onNothingSelected(AdapterView<?> parent) {}
@@ -79,32 +83,33 @@ public class ApplyEditionActivity extends AppCompatActivity {
         });
     }
 
-    // --- ESTA ES LA FUNCIÓN QUE USA LOS MÉTODOS QUE ME PREGUNTABAS ---
     private void configurarBotonDinamico() {
         if (edicionSeleccionada == null) return;
 
-        // 1. Usamos obtenerSolicitudesAceptadas para ver el cupo
+        // PASO 1: Obtenemos el número de personas ya aceptadas en esta edición
         solicitudService.obtenerSolicitudesAceptadas(edicionSeleccionada.getId()).observe(this, aceptados -> {
 
-            // 2. Usamos comprobarSolicitudesConcursante para ver si el usuario ya participó
+            // PASO 2: Comprobamos si este concursante específico ya tiene una solicitud aquí
             solicitudService.comprobarSolicitudesConcursante(edicionSeleccionada.getId(), currentUserId).observe(this, solicitudActiva -> {
 
                 int numAceptados = (aceptados != null) ? aceptados : 0;
 
+                // VALIDACIÓN A: El usuario ya ha solicitado participar
                 if (solicitudActiva != null) {
-                    // Si ya tiene una solicitud pendiente o aceptada
                     btnSubmitApplication.setEnabled(false);
                     if (solicitudActiva.getEstado() == EstadoSolicitud.ACEPTADA) {
                         btnSubmitApplication.setText("YA ERES PARTICIPANTE");
                     } else {
                         btnSubmitApplication.setText("SOLICITUD EN REVISIÓN");
                     }
-                } else if (numAceptados >= edicionSeleccionada.getNumeroParticipantesMax()) {
-                    // Si la edición está llena
+                }
+                // VALIDACIÓN B: La edición ha alcanzado el límite de participantes
+                else if (numAceptados >= edicionSeleccionada.getNumeroParticipantesMax()) {
                     btnSubmitApplication.setEnabled(false);
                     btnSubmitApplication.setText("CUPO COMPLETO");
-                } else {
-                    // Si todo está ok
+                }
+                // TODO OK: El usuario puede enviar la solicitud
+                else {
                     btnSubmitApplication.setEnabled(true);
                     btnSubmitApplication.setText("ENVIAR SOLICITUD");
                 }
@@ -119,6 +124,7 @@ public class ApplyEditionActivity extends AppCompatActivity {
             return;
         }
 
+        // Creamos el objeto solicitud con el ID de edición y de usuario
         Solicitud nueva = new Solicitud(
                 edicionSeleccionada.getId(),
                 currentUserId,
@@ -126,6 +132,7 @@ public class ApplyEditionActivity extends AppCompatActivity {
                 EstadoSolicitud.PENDIENTE
         );
 
+        // Guardamos en la base de datos
         solicitudService.insert(nueva);
         Toast.makeText(this, "Solicitud enviada", Toast.LENGTH_SHORT).show();
         finish();

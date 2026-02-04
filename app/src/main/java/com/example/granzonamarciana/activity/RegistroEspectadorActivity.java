@@ -25,12 +25,14 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registro_espectador);
 
+        // Inicializamos el servicio de espectador
         espectadorService = new EspectadorService(this);
         initViews();
         setupListeners();
     }
 
     private void initViews() {
+        // Enlace de vistas para capturar datos del espectador
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         etName = findViewById(R.id.etName);
@@ -44,6 +46,7 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
+        // Listener para cambiar el tipo de entrada de texto (password/visible)
         ivTogglePassword.setOnClickListener(v -> {
             if (passwordVisible) {
                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -56,11 +59,13 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
             etPassword.setSelection(etPassword.getText().length());
         });
 
+        // Acción al pulsar el botón de registro final
         btnFinalizeRegister.setOnClickListener(v -> registrarEspectador());
         findViewById(R.id.tvBackToLogin).setOnClickListener(v -> finish());
     }
 
     private void registrarEspectador() {
+        // Extracción de datos
         String username = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         String nombre = etName.getText().toString().trim();
@@ -70,11 +75,13 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
         String tlf = etPhone.getText().toString().trim();
         String imageUrl = etImageUrl.getText().toString().trim();
 
+        // Control de campos vacíos
         if (username.isEmpty() || password.isEmpty() || nombre.isEmpty() || ap1.isEmpty() || ap2.isEmpty() || email.isEmpty() || tlf.isEmpty()) {
             Toast.makeText(this, "Campos obligatorios vacíos", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Validaciones de longitud y formato
         if (tlf.length() != 9) {
             etPhone.setError("9 dígitos");
             return;
@@ -85,19 +92,17 @@ public class RegistroEspectadorActivity extends AppCompatActivity {
             return;
         }
 
-        // IMAGEN OPCIONAL
-        String finalImageUrl;
-        if (imageUrl.isEmpty()) {
-            finalImageUrl = "ic_person"; // Valor por defecto
-        } else {
-            finalImageUrl = imageUrl; // URL introducida
-        }
+        // Manejo de imagen de perfil
+        String finalImageUrl = imageUrl.isEmpty() ? "ic_person" : imageUrl;
+
+        // Creación de la entidad Espectador con hash de contraseña y fecha actual
         Espectador e = new Espectador(
                 username, BCrypt.hashpw(password, BCrypt.gensalt()),
                 nombre, ap1, ap2, tlf, email, finalImageUrl,
                 TipoRol.ESPECTADOR, LocalDate.now()
         );
 
+        // Guardado en BD a través del servicio y salida de la actividad
         espectadorService.insertar(e);
         Toast.makeText(this, "Registro de Espectador completado", Toast.LENGTH_LONG).show();
         finish();

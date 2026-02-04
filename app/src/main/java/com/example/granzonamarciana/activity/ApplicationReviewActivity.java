@@ -26,16 +26,12 @@ public class ApplicationReviewActivity extends AppCompatActivity {
         solicitudService = new SolicitudService(getApplication());
         edicionService = new EdicionService(getApplication());
 
-        // Vincular vistas
         tvApplicantName = findViewById(R.id.tvApplicantName);
         tvMotivationDetail = findViewById(R.id.tvMotivationDetail);
         Button btnAccept = findViewById(R.id.btnAccept);
         Button btnReject = findViewById(R.id.btnReject);
-
-        // CORRECCIÓN: Buscamos el botón de volver (en el XML lo llamaremos btnBackReview)
         View btnBack = findViewById(R.id.btnBackReview);
 
-        // Recuperar ID de la solicitud
         int solicitudId = getIntent().getIntExtra("SOLICITUD_ID", -1);
 
         if (solicitudId != -1) {
@@ -45,23 +41,24 @@ public class ApplicationReviewActivity extends AppCompatActivity {
             finish();
         }
 
-        // Configurar botones con seguridad (null check)
+        // LÓGICA PARA ACEPTAR: Se comprueba primero el cupo de la edición
         if (btnAccept != null) {
             btnAccept.setOnClickListener(v -> {
                 if (solConConcursanteActual != null && solConConcursanteActual.solicitud != null) {
+                    // Consultamos la edición para saber cuántos participantes máximos permite
                     edicionService.listarEdicionePorid(solConConcursanteActual.solicitud.getEditionId()).observe(this, edicion -> {
                         if (edicion != null) {
+                            // El service se encarga de cambiar el estado a ACEPTADA y verificar cupos
                             solicitudService.aceptarSolicitud(solConConcursanteActual.solicitud, edicion.getNumeroParticipantesMax());
                             Toast.makeText(this, "Solicitud Aceptada", Toast.LENGTH_SHORT).show();
                             finish();
-                        } else {
-                            Toast.makeText(this, "No se encontró la edición vinculada", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
             });
         }
 
+        // LÓGICA PARA RECHAZAR: Simplemente cambia el estado a RECHAZADA
         if (btnReject != null) {
             btnReject.setOnClickListener(v -> {
                 if (solConConcursanteActual != null && solConConcursanteActual.solicitud != null) {
@@ -82,25 +79,21 @@ public class ApplicationReviewActivity extends AppCompatActivity {
             if (solConConcursante != null && solConConcursante.solicitud != null) {
                 solConConcursanteActual = solConConcursante;
 
-                // 1. Mostrar datos del aspirante
+                // Mostramos nombre completo y el mensaje de motivación del aspirante
                 if (solConConcursante.concursante != null) {
                     tvApplicantName.setText(solConConcursante.concursante.getNombre() + " " + solConConcursante.concursante.getPrimerApellido());
                 }
-
                 tvMotivationDetail.setText(solConConcursante.solicitud.getMensaje());
 
-                // 2. RESTRICCIÓN DE DECISIÓN
-                // Si el estado NO es PENDIENTE, significa que ya se tomó una decisión
+                // REGLA DE NEGOCIO: Si la solicitud ya no está PENDIENTE, ocultamos los botones de decisión
+                // para evitar que el administrador cambie de opinión o cause errores en los cupos
                 if (solConConcursante.solicitud.getEstado() != com.example.granzonamarciana.entity.EstadoSolicitud.PENDIENTE) {
-
-                    // Buscamos los botones para ocultarlos
                     Button btnAccept = findViewById(R.id.btnAccept);
                     Button btnReject = findViewById(R.id.btnReject);
 
                     if (btnAccept != null) btnAccept.setVisibility(View.GONE);
                     if (btnReject != null) btnReject.setVisibility(View.GONE);
 
-                    // Opcional: Mostrar un texto indicando la decisión tomada
                     tvMotivationDetail.append("\n\n(ESTA SOLICITUD YA FUE PROCESADA)");
                 }
             }

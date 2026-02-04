@@ -17,13 +17,16 @@ public class PopulateBD {
     private final GalaService galaService;
     private final PuntuacionService puntuacionService;
 
-    private final String IMG_MARCIANO_AZUL = "https://i.pinimg.com/736x/8a/6c/d0/8a6cd0cbf34b2646d0148c06c60d87eb.jpg";
-    private final String IMG_CYBERPUNK = "https://images.steamusercontent.com/ugc/10940843880100406591/20AED04CA53DC902287155F396C335970D26AFD1/";
-    private final String IMG_ANIME_GIRL = "https://i.redd.it/4qoadr4pdqs91.png";
-    private final String IMG_RETRATO = "https://img.wattpad.com/cover/251546382-256-k128842.jpg";
-    private final String IMG_MERO = "https://media.meer.com/attachments/a61ef3c5af84660ddd9d2b3f101e931d1f1c74c1/store/fill/860/645/6d87876e655d8c2a2aa41e9fc377c5ed10e7793b9f42c0c9de894c042d6f/Mero.jpg";
-    private final String IMG_ALIEN_GREEN = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfeuLwmvj2x2RcyVpeih6J0Sh4TCxXWhk1ww&s";
-    private final String IMG_ABSTRACCION = "https://i1.sndcdn.com/artworks-Ef3xqeyrwFGXeM9M-bwC5tw-t1080x1080.jpg";
+    // --- GALERÍA DE IMÁGENES ---
+    private final String IMG_ADMIN = "https://i.pinimg.com/736x/8a/6c/d0/8a6cd0cbf34b2646d0148c06c60d87eb.jpg";
+    private final String IMG_COSPLAY_VADER = "https://www.shutterstock.com/image-vector/darth-vader-helmet-logo-universe-600nw-2350946717.jpg";
+    private final String IMG_RYUU_LION = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh8-dEX4DE7k0ExXigGf0kihff1WZhONiyPA&s";
+    private final String IMG_ESQUELETOS_ANIMADOS = "https://preview.redd.it/l-animated-the-skeleton-banging-shield-gif-v0-gda97diyodcg1.png?width=403&format=png&auto=webp&s=a96aca5115b31383062279c247e01ee94e778388";
+    private final String IMG_ESQUELETOS_FLOTANTES = "https://i.pinimg.com/736x/16/c0/55/16c055d9dc975a4269a18ee0535f552e.jpg";
+    private final String IMG_VEGETTA = "https://www.famousbirthdays.com/faces/vegetta777-image.jpg";
+    private final String IMG_WILLYREX = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxVCjYBdvh8g7k1BMwEi1N4SFq-daZJkSYFA&s";
+    private final String IMG_GATO_ALIEN = "https://preview.redd.it/alien-cat-v0-519r9x4eyg2e1.jpg?width=640&crop=smart&auto=webp&s=ce81a80b046fd80cfd93423cc9483e3f918ac79c";
+    private final String IMG_VENOM = "https://i.blogs.es/92852d/cartel-venom/450_1000.jpg";
 
     public PopulateBD(Context c) {
         this.administradorService = new AdministradorService(c);
@@ -42,73 +45,70 @@ public class PopulateBD {
     }
 
     private void populateUsuarios() {
-        administradorService.insertarAdministrador(new Administrador("admin", BCrypt.hashpw("admin", BCrypt.gensalt()),
-                "Oscar", "Ruiz", "Bejarano", "123456789", "admin@gmail.com", IMG_MARCIANO_AZUL, TipoRol.ADMINISTRADOR, LocalDate.now()));
+        // ADMINISTRADOR
+        administradorService.insertarAdministrador(new Administrador("el_super", BCrypt.hashpw("admin", BCrypt.gensalt()),
+                "Oscar", "Ruiz", "Bejarano", "123456789", "produccion@marztv.com", IMG_ADMIN, TipoRol.ADMINISTRADOR, LocalDate.now()));
 
-        espectadorService.insertar(new Espectador("MarcianoFan", BCrypt.hashpw("1234", BCrypt.gensalt()),
-                "Lucía", "García", "Sanz", "699888777", "lucia@email.com", IMG_ANIME_GIRL, TipoRol.ESPECTADOR, LocalDate.now()));
+        // CONCURSANTES
+        concursanteService.insert(new Concursante("CosplayVader", BCrypt.hashpw("a", BCrypt.gensalt()), "Arturo", "Sky", "García", "600111222", "vader@fans.com", IMG_COSPLAY_VADER, TipoRol.CONCURSANTE, LocalDate.now()));
+        concursanteService.insert(new Concursante("Vegetta777", BCrypt.hashpw("a", BCrypt.gensalt()), "Samuel", "De Luque", "Batuecas", "600333444", "vegetta@planeta.com", IMG_VEGETTA, TipoRol.CONCURSANTE, LocalDate.now()));
+        concursanteService.insert(new Concursante("Willyrex", BCrypt.hashpw("a", BCrypt.gensalt()), "Guillermo", "Díaz", "Ibáñez", "600555666", "willy@golem.com", IMG_WILLYREX, TipoRol.CONCURSANTE, LocalDate.now()));
+        concursanteService.insert(new Concursante("Venom", BCrypt.hashpw("a", BCrypt.gensalt()), "Eddie", "Brock", "Symbiote", "600777888", "wearevenom@show.com", IMG_VENOM, TipoRol.CONCURSANTE, LocalDate.now()));
 
-        espectadorService.insertar(new Espectador("GamerPro", BCrypt.hashpw("1234", BCrypt.gensalt()),
-                "David", "Soto", "Mena", "611222333", "david@email.com", "ic_default_avatar", TipoRol.ESPECTADOR, LocalDate.now()));
+        // Concursantes sin foto de perfil
+        concursanteService.insert(new Concursante("MisteriosoX", BCrypt.hashpw("a", BCrypt.gensalt()), "Juan", "Incógnito", "López", "611000111", "juan@incognito.com", "ic_default_avatar", TipoRol.CONCURSANTE, LocalDate.now()));
+        concursanteService.insert(new Concursante("Anonimo22", BCrypt.hashpw("a", BCrypt.gensalt()), "Sara", "Nadie", "Gómez", "611000222", "sara@anonima.com", "ic_default_avatar", TipoRol.CONCURSANTE, LocalDate.now()));
 
-        concursanteService.insert(new Concursante("Prueba1", BCrypt.hashpw("a", BCrypt.gensalt()), "Alberto", "Ames", "Alba", "600111222", "alberto@email.com", IMG_CYBERPUNK, TipoRol.CONCURSANTE, LocalDate.now()));
-        concursanteService.insert(new Concursante("MarcianoX", BCrypt.hashpw("a", BCrypt.gensalt()), "Xavier", "Lopez", "Gala", "600333444", "xavi@email.com", IMG_RETRATO, TipoRol.CONCURSANTE, LocalDate.now()));
-        concursanteService.insert(new Concursante("AlienQueen", BCrypt.hashpw("a", BCrypt.gensalt()), "Elena", "Vidal", "Oca", "600555666", "elena@email.com", IMG_ALIEN_GREEN, TipoRol.CONCURSANTE, LocalDate.now()));
-        concursanteService.insert(new Concursante("Stellar", BCrypt.hashpw("a", BCrypt.gensalt()), "Sara", "Polo", "Ruiz", "600777888", "sara@email.com", IMG_MERO, TipoRol.CONCURSANTE, LocalDate.now()));
-        concursanteService.insert(new Concursante("Nebula", BCrypt.hashpw("a", BCrypt.gensalt()), "Iker", "Casas", "Rey", "600999000", "iker@email.com", "ic_default_avatar", TipoRol.CONCURSANTE, LocalDate.now()));
-        concursanteService.insert(new Concursante("Zorg", BCrypt.hashpw("a", BCrypt.gensalt()), "Zorg", "Alpha", "Beta", "622111000", "zorg@email.com", IMG_ABSTRACCION, TipoRol.CONCURSANTE, LocalDate.now()));
-        concursanteService.insert(new Concursante("Nova", BCrypt.hashpw("a", BCrypt.gensalt()), "Nova", "Terra", "Nova", "633222111", "nova@email.com", IMG_ANIME_GIRL, TipoRol.CONCURSANTE, LocalDate.now()));
-        concursanteService.insert(new Concursante("Orbit", BCrypt.hashpw("a", BCrypt.gensalt()), "Victor", "Vortex", "Sun", "644333222", "orbit@email.com", IMG_RETRATO, TipoRol.CONCURSANTE, LocalDate.now()));
+        // ESPECTADORES
+        espectadorService.insertar(new Espectador("RyuuFan", BCrypt.hashpw("1234", BCrypt.gensalt()), "Ryuu", "Lion", "Gale", "699888777", "ryuu@elfa.com", IMG_RYUU_LION, TipoRol.ESPECTADOR, LocalDate.now()));
+        espectadorService.insertar(new Espectador("AlienCat", BCrypt.hashpw("1234", BCrypt.gensalt()), "Gato", "Cósmico", "Miau", "611222333", "gato@marte.com", IMG_GATO_ALIEN, TipoRol.ESPECTADOR, LocalDate.now()));
     }
 
     private void populateEdicionesGalasYNoticias() {
         Edicion ed1 = new Edicion(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31), 20);
         edicionService.insertarEdicion(ed1);
 
-        solicitudService.insert(new Solicitud(1, 1, "Vengo de Marte a ganar.", EstadoSolicitud.ACEPTADA));
-        solicitudService.insert(new Solicitud(1, 2, "Soy un experto en supervivencia espacial.", EstadoSolicitud.ACEPTADA));
-        solicitudService.insert(new Solicitud(1, 3, "La corona es mía por derecho galáctico.", EstadoSolicitud.ACEPTADA));
-        solicitudService.insert(new Solicitud(1, 4, "Brillaré más que una supernova.", EstadoSolicitud.ACEPTADA));
-        solicitudService.insert(new Solicitud(1, 5, "Silencioso pero letal en los juegos.", EstadoSolicitud.ACEPTADA));
-        solicitudService.insert(new Solicitud(1, 6, "Quiero entrar para pagar mi nave nueva.", EstadoSolicitud.PENDIENTE));
-        solicitudService.insert(new Solicitud(1, 7, "Mi planeta me envió como embajadora.", EstadoSolicitud.PENDIENTE));
-        solicitudService.insert(new Solicitud(1, 8, "Vengo a romperlo todo.", EstadoSolicitud.RECHAZADA));
+        // SOLICITUDES
+        solicitudService.insert(new Solicitud(1, 1, "Vengo a demostrar que mi cosplay de Vader es el más imponente de la galaxia.", EstadoSolicitud.ACEPTADA));
+        solicitudService.insert(new Solicitud(1, 2, "¡EYYYY muy buenas a todos aquí Vegetta777 y en el día de hoy me encuentro solicitando mi entrada a este reality para construir el refugio más increíble de Marte junto a mi compañero Willy!", EstadoSolicitud.ACEPTADA));
+        solicitudService.insert(new Solicitud(1, 3, "¡Sinceramente Marte me parece el sitio perfecto para vivir aventuras! Entro con Vegetta para demostrar que somos el mejor equipo.", EstadoSolicitud.ACEPTADA));
+        solicitudService.insert(new Solicitud(1, 4, "Hemos traído un esqueleto animado gigante que golpea su escudo para que nadie se olvide de nosotros.", EstadoSolicitud.ACEPTADA));
 
-        LocalDate inicio = LocalDate.of(2026, 1, 1);
-        LocalDate fin = LocalDate.of(2026, 12, 31);
+        // Solicitud de MisteriosoX trayendo decoración extraña
+        solicitudService.insert(new Solicitud(1, 5, "No mostraré mi cara, pero he traído unos esqueletos flotantes espectrales para decorar mi cuarto. Dan un toque acogedor.", EstadoSolicitud.ACEPTADA));
+        solicitudService.insert(new Solicitud(1, 6, "Prometo dar mucho salseo si me dejáis entrar.", EstadoSolicitud.PENDIENTE));
 
-        // CORRECCIÓN GALA: El constructor pide (editionId, fecha)
-        galaService.insert(new Gala(1, LocalDate.of(2026, 3, 15)), inicio, fin);
-        galaService.insert(new Gala(1, LocalDate.of(2026, 4, 15)), inicio, fin);
-        galaService.insert(new Gala(1, LocalDate.of(2026, 5, 15)), inicio, fin);
+        galaService.insert(new Gala(1, LocalDate.of(2026, 3, 15)), LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31));
 
-        puntuacionService.puntuar(new Puntuacion(1, 1, 1, 5, LocalDate.now()));
-        puntuacionService.puntuar(new Puntuacion(1, 1, 2, 4, LocalDate.now()));
-        puntuacionService.puntuar(new Puntuacion(1, 2, 1, 3, LocalDate.now()));
-        puntuacionService.puntuar(new Puntuacion(1, 3, 1, 5, LocalDate.now()));
+        // NOTICIAS
+        noticiaService.insertarNoticia(new Noticia(LocalDate.now(),
+                "¡POLÉMICA! Venom ha introducido un esqueleto gigante que no para de golpear su escudo. Los concursantes están al límite por la falta de sueño.",
+                "EL REGALO 'RUIDOSO' DE VENOM", IMG_ESQUELETOS_ANIMADOS, 1, 1));
 
         noticiaService.insertarNoticia(new Noticia(LocalDate.now(),
-                "La base marciana abre sus puertas a los nuevos elegidos. ¡La competencia promete ser feroz!",
-                "BIENVENIDOS A LA ZONA MARCIANA", IMG_ABSTRACCION, 1, 1));
+                "Arturo (Vader) se niega a quitarse la máscara incluso durante las comidas. Algunos concursantes sospechan que oculta algo o que simplemente tiene miedo al aire de Marte.",
+                "EL MISTERIO TRAS EL CASCO", IMG_COSPLAY_VADER, 1, 1));
 
         noticiaService.insertarNoticia(new Noticia(LocalDate.now(),
-                "Alberto y Elena protagonizan la primera gran discusión por los suministros de oxígeno.",
-                "TENSIÓN EN EL MÓDULO DE VIDA", IMG_MERO, 1, 1));
-
-        noticiaService.insertarNoticia(new Noticia(LocalDate.now(),
-                "Un objeto no identificado ha sido avistado cerca de la nave. ¿Aliados o enemigos?",
-                "AVISTAMIENTO OVNI", IMG_CYBERPUNK, 1, 1));
-
-        noticiaService.insertarNoticia(new Noticia(LocalDate.now(),
-                "Zorg y Nova siguen esperando su oportunidad. ¿Los aceptará el administrador?",
-                "SOLICITUDES EN ESPERA", IMG_ALIEN_GREEN, 1, 1));
-
-        noticiaService.insertarNoticia(new Noticia(LocalDate.now(),
-                "Mañana se celebra la primera gran gala. Las votaciones están que arden.",
-                "CUENTA ATRÁS PARA LA GALA", IMG_RETRATO, 1, 1));
+                "MisteriosoX ha decorado el pasillo con esqueletos flotantes que parecen seguir a los participantes con la mirada. La casa parece un túnel del terror.",
+                "DECORACIÓN MACABRA EN LA BASE", IMG_ESQUELETOS_FLOTANTES, 1, 1));
     }
 
-    public void deleteBD(Context c){
-        c.deleteDatabase("granzona_db");
+    public void deleteBD(Context c) {
+        DatabaseHelper db = DatabaseHelper.getInstance(c);
+        new Thread(() -> {
+            try {
+                // 1. Limpiar datos de las tablas
+                db.clearAllTables();
+
+                // 2. Reiniciar los contadores autoincrementales
+                // Esto obliga a que el próximo insert sea ID 1
+                db.getOpenHelper().getWritableDatabase().execSQL("DELETE FROM sqlite_sequence");
+
+                android.util.Log.d("PopulateBD", "Tablas y contadores reiniciados");
+            } catch (Exception e) {
+                android.util.Log.e("PopulateBD", "Error al limpiar: " + e.getMessage());
+            }
+        }).start();
     }
 }

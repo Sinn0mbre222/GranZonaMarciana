@@ -18,7 +18,7 @@ public class EdicionService {
 
     public EdicionService(Context context) {
         DatabaseHelper db = DatabaseHelper.getInstance(context);
-        edicionDao = db.edicionDAO();
+        edicionDao = db.edicionDao();
     }
 
     public void insertarEdicion(final Edicion edicion) {

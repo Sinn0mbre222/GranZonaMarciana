@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.granzonamarciana.R;
 import com.example.granzonamarciana.adapter.SolicitudAdapter;
 import com.example.granzonamarciana.entity.Edicion;
-import com.example.granzonamarciana.entity.Solicitud;
+import com.example.granzonamarciana.entity.pojo.SolicitudConConcursante;
 import com.example.granzonamarciana.service.EdicionService;
 import com.example.granzonamarciana.service.SolicitudService;
 import java.util.ArrayList;
@@ -47,12 +47,15 @@ public class ManageApplicationsActivity extends AppCompatActivity {
         // 4. Cargar Ediciones para el filtro
         cargarFiltroEdiciones();
 
-        // 5. Click en solicitud para revisar
+        // 5. CORRECCIÓN DEL CLICK: Manejar el POJO SolicitudConConcursante
         listView.setOnItemClickListener((parent, view, position, id) -> {
-            Solicitud seleccionada = (Solicitud) adapter.getItem(position);
-            if (seleccionada != null) {
+            // CAMBIO CLAVE: Obtenemos el wrapper, no la entidad simple
+            SolicitudConConcursante wrapper = (SolicitudConConcursante) adapter.getItem(position);
+
+            if (wrapper != null && wrapper.solicitud != null) {
                 Intent intent = new Intent(this, ApplicationReviewActivity.class);
-                intent.putExtra("SOLICITUD_ID", seleccionada.getId());
+                // Accedemos al ID real a través del objeto solicitud dentro del wrapper
+                intent.putExtra("SOLICITUD_ID", wrapper.solicitud.getId());
                 startActivity(intent);
             }
         });
@@ -65,7 +68,7 @@ public class ManageApplicationsActivity extends AppCompatActivity {
             if (ediciones != null && !ediciones.isEmpty()) {
                 listaEdiciones = ediciones;
                 List<String> labels = new ArrayList<>();
-                labels.add("Todas las solicitudes"); // Opción por defecto
+                labels.add("Todas las solicitudes");
 
                 for (Edicion e : ediciones) {
                     labels.add("Edición #" + e.getId());
@@ -80,10 +83,8 @@ public class ManageApplicationsActivity extends AppCompatActivity {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         if (position == 0) {
-                            // Cargar todas
                             cargarTodasLasSolicitudes();
                         } else {
-                            // Filtrar por la edición seleccionada (ajuste de índice -1 por el "Todas")
                             int idEdicion = listaEdiciones.get(position - 1).getId();
                             cargarSolicitudesPorEdicion(idEdicion);
                         }
@@ -91,12 +92,13 @@ public class ManageApplicationsActivity extends AppCompatActivity {
                     @Override public void onNothingSelected(AdapterView<?> parent) {}
                 });
             } else {
-                cargarTodasLasSolicitudes(); // Si no hay ediciones, intentamos cargar todas
+                cargarTodasLasSolicitudes();
             }
         });
     }
 
     private void cargarTodasLasSolicitudes() {
+        // El service ahora devuelve List<SolicitudConConcursante>
         solicitudService.getAllSolicitudes().observe(this, lista -> {
             if (lista != null) {
                 adapter.setSolicitudes(lista);
@@ -105,6 +107,7 @@ public class ManageApplicationsActivity extends AppCompatActivity {
     }
 
     private void cargarSolicitudesPorEdicion(int edicionId) {
+        // El service ahora devuelve List<SolicitudConConcursante>
         solicitudService.getSolicitudesByEdicion(edicionId).observe(this, lista -> {
             if (lista != null) {
                 adapter.setSolicitudes(lista);

@@ -65,4 +65,11 @@ public interface SolicitudDao {
     @Transaction
     @Query("SELECT * FROM solicitudes WHERE id = :id")
     LiveData<SolicitudConConcursante> findByIdConDetalle(int id);
+
+    @Query("SELECT * FROM solicitudes WHERE editionId = :editionId AND concursanteId = :concursanteId " +
+            "AND estado IN ('PENDIENTE', 'ACEPTADA') LIMIT 1")
+    LiveData<Solicitud> obtenerSolicitudesActivas(int editionId, int concursanteId);
+
+    @Query("SELECT COUNT(*) FROM solicitudes WHERE editionId = :editionId AND estado = 'ACEPTADA'")
+    LiveData<Integer> obtenerSolicitudesAceptadas(int editionId);
 }

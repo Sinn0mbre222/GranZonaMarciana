@@ -124,7 +124,6 @@ public class ParticipantsListActivity extends AppCompatActivity {
                 spinnerGalas.setEnabled(true);
             }
 
-            // CORRECCIÓN: Usar ParticipantsListActivity.this
             ArrayAdapter<String> adapterGalas = new ArrayAdapter<>(
                     ParticipantsListActivity.this,
                     R.layout.spinner_rol_item,
@@ -136,11 +135,15 @@ public class ParticipantsListActivity extends AppCompatActivity {
     }
 
     private void cargarParticipantes(int idEdicion) {
+
         concursanteService.obtenerPorEdicion(idEdicion).observe(this, concursantes -> {
             if (concursantes != null) {
                 listaConcursantesFull = new ArrayList<>(concursantes);
-                adapter = new ParticipantAdapter(this, R.layout.item_participant, listaConcursantesFull);
-                lvParticipantes.setAdapter(adapter);
+
+                if (adapter == null) {
+                    adapter = new ParticipantAdapter(this, R.layout.item_participant, new ArrayList<>(listaConcursantesFull));
+                    lvParticipantes.setAdapter(adapter);
+                }
                 filtrarListaLocal(etBuscar.getText().toString());
             }
         });

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.granzonamarciana.R;
 import com.example.granzonamarciana.entity.pojo.SolicitudConConcursante;
@@ -14,8 +15,7 @@ public class ApplicationReviewActivity extends AppCompatActivity {
 
     private TextView tvApplicantName, tvMotivationDetail;
     private SolicitudService solicitudService;
-    // CAMBIO: Ahora manejamos el POJO para tener acceso a los datos del concursante
-    private SolicitudConConcursante wrapperActual;
+    private SolicitudConConcursante solConConcursanteActual;
     private EdicionService edicionService;
 
     @Override
@@ -32,6 +32,9 @@ public class ApplicationReviewActivity extends AppCompatActivity {
         Button btnAccept = findViewById(R.id.btnAccept);
         Button btnReject = findViewById(R.id.btnReject);
 
+        // CORRECCIÓN: Buscamos el botón de volver (en el XML lo llamaremos btnBackReview)
+        View btnBack = findViewById(R.id.btnBackReview);
+
         // Recuperar ID de la solicitud
         int solicitudId = getIntent().getIntExtra("SOLICITUD_ID", -1);
 
@@ -42,46 +45,64 @@ public class ApplicationReviewActivity extends AppCompatActivity {
             finish();
         }
 
-        // Configurar botones
-        btnAccept.setOnClickListener(v -> {
-            if (wrapperActual != null && wrapperActual.solicitud != null) {
-                // Buscamos la edición para saber su aforo máximo real
-                edicionService.listarEdicionePorid(wrapperActual.solicitud.getEditionId()).observe(this, edicion -> {
-                    if (edicion != null) {
-                        // Llamamos al service con el aforo real de la edición
-                        solicitudService.aceptarSolicitud(wrapperActual.solicitud, edicion.getNumeroParticipantesMax());
-                        Toast.makeText(this, "Solicitud Aceptada", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(this, "No se encontró la edición vinculada", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
+        // Configurar botones con seguridad (null check)
+        if (btnAccept != null) {
+            btnAccept.setOnClickListener(v -> {
+                if (solConConcursanteActual != null && solConConcursanteActual.solicitud != null) {
+                    edicionService.listarEdicionePorid(solConConcursanteActual.solicitud.getEditionId()).observe(this, edicion -> {
+                        if (edicion != null) {
+                            solicitudService.aceptarSolicitud(solConConcursanteActual.solicitud, edicion.getNumeroParticipantesMax());
+                            Toast.makeText(this, "Solicitud Aceptada", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            Toast.makeText(this, "No se encontró la edición vinculada", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+        }
 
-        btnReject.setOnClickListener(v -> {
-            if (wrapperActual != null && wrapperActual.solicitud != null) {
-                solicitudService.rechazarSolicitud(wrapperActual.solicitud);
-                Toast.makeText(this, "Solicitud Rechazada", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        });
+        if (btnReject != null) {
+            btnReject.setOnClickListener(v -> {
+                if (solConConcursanteActual != null && solConConcursanteActual.solicitud != null) {
+                    solicitudService.rechazarSolicitud(solConConcursanteActual.solicitud);
+                    Toast.makeText(this, "Solicitud Rechazada", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            });
+        }
 
-        findViewById(R.id.tvBack).setOnClickListener(v -> finish());
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
     }
 
     private void cargarDatos(int id) {
-        solicitudService.getSolicitudById(id).observe(this, wrapper -> {
-            if (wrapper != null && wrapper.solicitud != null) {
-                wrapperActual = wrapper;
+        solicitudService.getSolicitudById(id).observe(this, solConConcursante -> {
+            if (solConConcursante != null && solConConcursante.solicitud != null) {
+                solConConcursanteActual = solConConcursante;
 
-                if (wrapper.concursante != null) {
-                    tvApplicantName.setText(wrapper.concursante.getNombre() + " " + wrapper.concursante.getPrimerApellido());
-                } else {
-                    tvApplicantName.setText("Aspirante ID: " + wrapper.solicitud.getConcursanteId());
+                // 1. Mostrar datos del aspirante
+                if (solConConcursante.concursante != null) {
+                    tvApplicantName.setText(solConConcursante.concursante.getNombre() + " " + solConConcursante.concursante.getPrimerApellido());
                 }
 
-                tvMotivationDetail.setText(wrapper.solicitud.getMensaje());
+                tvMotivationDetail.setText(solConConcursante.solicitud.getMensaje());
+
+                // 2. RESTRICCIÓN DE DECISIÓN
+                // Si el estado NO es PENDIENTE, significa que ya se tomó una decisión
+                if (solConConcursante.solicitud.getEstado() != com.example.granzonamarciana.entity.EstadoSolicitud.PENDIENTE) {
+
+                    // Buscamos los botones para ocultarlos
+                    Button btnAccept = findViewById(R.id.btnAccept);
+                    Button btnReject = findViewById(R.id.btnReject);
+
+                    if (btnAccept != null) btnAccept.setVisibility(View.GONE);
+                    if (btnReject != null) btnReject.setVisibility(View.GONE);
+
+                    // Opcional: Mostrar un texto indicando la decisión tomada
+                    tvMotivationDetail.append("\n\n(ESTA SOLICITUD YA FUE PROCESADA)");
+                }
             }
         });
     }

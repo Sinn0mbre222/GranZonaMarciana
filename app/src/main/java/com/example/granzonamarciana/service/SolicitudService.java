@@ -89,4 +89,12 @@ public class SolicitudService {
         return solicitudDao.countAceptadasByEdition(editionId);
     }
 
+    public LiveData<Solicitud> comprobarSolicitudesConcursante(int editionId, int concursanteId) {
+        return solicitudDao.obtenerSolicitudesActivas(editionId, concursanteId);
+    }
+
+    public LiveData<Integer> obtenerSolicitudesAceptadas(int editionId) {
+        return solicitudDao.obtenerSolicitudesAceptadas(editionId);
+    }
+
 }

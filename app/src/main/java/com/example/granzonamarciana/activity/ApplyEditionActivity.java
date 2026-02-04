@@ -32,41 +32,20 @@ public class ApplyEditionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_apply_edition);
 
-        // 1. Obtener ID del usuario desde la sesión real
         SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
         currentUserId = prefs.getInt("id", -1);
 
-        if (currentUserId == -1) {
-            Toast.makeText(this, "Sesión no válida", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        // 2. Inicializar Servicios
         solicitudService = new SolicitudService(getApplication());
         edicionService = new EdicionService(getApplication());
 
-        // 3. Vincular vistas
         etMotivationMessage = findViewById(R.id.etMotivationMessage);
         spinnerEdiciones = findViewById(R.id.spinnerEdicionesApply);
         btnSubmitApplication = findViewById(R.id.btnSubmitApplication);
-        TextView tvCancel = findViewById(R.id.tvCancel);
 
-        // 4. Cargar ediciones abiertas
         cargarEdicionesAbiertas();
 
-        btnSubmitApplication.setOnClickListener(v -> {
-            String mensaje = etMotivationMessage.getText().toString().trim();
-            if (mensaje.isEmpty()) {
-                Toast.makeText(this, "Escribe tus motivos", Toast.LENGTH_SHORT).show();
-            } else if (edicionSeleccionada == null) {
-                Toast.makeText(this, "Selecciona una edición", Toast.LENGTH_SHORT).show();
-            } else {
-                enviarSolicitud(mensaje);
-            }
-        });
-
-        tvCancel.setOnClickListener(v -> finish());
+        btnSubmitApplication.setOnClickListener(v -> enviarSolicitud());
+        findViewById(R.id.tvCancel).setOnClickListener(v -> finish());
     }
 
     private void cargarEdicionesAbiertas() {
@@ -77,58 +56,78 @@ public class ApplyEditionActivity extends AppCompatActivity {
                 LocalDate hoy = LocalDate.now();
 
                 for (Edicion ed : ediciones) {
-                    // Solo permitimos ediciones cuya fecha final no haya pasado
                     if (ed.getFechaFinal() != null && !ed.getFechaFinal().isBefore(hoy)) {
                         listaEdicionesDisponibles.add(ed);
-                        etiquetas.add("Edición #" + ed.getId() + " (Hasta: " + ed.getFechaFinal() + ")");
+                        etiquetas.add("Edición #" + ed.getId());
                     }
                 }
 
-                if (listaEdicionesDisponibles.isEmpty()) {
-                    etiquetas.add("No hay ediciones abiertas");
-                    btnSubmitApplication.setEnabled(false);
-                }
-
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                        this, R.layout.spinner_rol_item, etiquetas);
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_rol_item, etiquetas);
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinnerEdiciones.setAdapter(adapter);
 
                 spinnerEdiciones.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        if (!listaEdicionesDisponibles.isEmpty()) {
-                            edicionSeleccionada = listaEdicionesDisponibles.get(position);
-                        }
+                        edicionSeleccionada = listaEdicionesDisponibles.get(position);
+                        // ¡AQUÍ ES DONDE USAMOS LOS MÉTODOS DEL SERVICE!
+                        configurarBotonDinamico();
                     }
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {}
+                    @Override public void onNothingSelected(AdapterView<?> parent) {}
                 });
             }
         });
     }
 
-    private void enviarSolicitud(String mensaje) {
-        // Preguntamos rápido a la BD cuántos hay ya aceptados
-        new Thread(() -> {
-            int aceptados = solicitudService.contarAceptadosSync(edicionSeleccionada.getId());
+    // --- ESTA ES LA FUNCIÓN QUE USA LOS MÉTODOS QUE ME PREGUNTABAS ---
+    private void configurarBotonDinamico() {
+        if (edicionSeleccionada == null) return;
 
-            if (aceptados >= edicionSeleccionada.getNumeroParticipantesMax()) {
-                runOnUiThread(() -> Toast.makeText(this, "Esta edición ya se ha completado", Toast.LENGTH_SHORT).show());
-            } else {
-                // Si hay hueco, enviamos normal
-                Solicitud nuevaSolicitud = new Solicitud(
-                        edicionSeleccionada.getId(),
-                        currentUserId,
-                        mensaje,
-                        EstadoSolicitud.PENDIENTE
-                );
-                solicitudService.insert(nuevaSolicitud);
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "Solicitud enviada", Toast.LENGTH_SHORT).show();
-                    finish();
-                });
-            }
-        }).start();
+        // 1. Usamos obtenerSolicitudesAceptadas para ver el cupo
+        solicitudService.obtenerSolicitudesAceptadas(edicionSeleccionada.getId()).observe(this, aceptados -> {
+
+            // 2. Usamos comprobarSolicitudesConcursante para ver si el usuario ya participó
+            solicitudService.comprobarSolicitudesConcursante(edicionSeleccionada.getId(), currentUserId).observe(this, solicitudActiva -> {
+
+                int numAceptados = (aceptados != null) ? aceptados : 0;
+
+                if (solicitudActiva != null) {
+                    // Si ya tiene una solicitud pendiente o aceptada
+                    btnSubmitApplication.setEnabled(false);
+                    if (solicitudActiva.getEstado() == EstadoSolicitud.ACEPTADA) {
+                        btnSubmitApplication.setText("YA ERES PARTICIPANTE");
+                    } else {
+                        btnSubmitApplication.setText("SOLICITUD EN REVISIÓN");
+                    }
+                } else if (numAceptados >= edicionSeleccionada.getNumeroParticipantesMax()) {
+                    // Si la edición está llena
+                    btnSubmitApplication.setEnabled(false);
+                    btnSubmitApplication.setText("CUPO COMPLETO");
+                } else {
+                    // Si todo está ok
+                    btnSubmitApplication.setEnabled(true);
+                    btnSubmitApplication.setText("ENVIAR SOLICITUD");
+                }
+            });
+        });
+    }
+
+    private void enviarSolicitud() {
+        String mensaje = etMotivationMessage.getText().toString().trim();
+        if (mensaje.isEmpty()) {
+            Toast.makeText(this, "Escribe tus motivos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Solicitud nueva = new Solicitud(
+                edicionSeleccionada.getId(),
+                currentUserId,
+                mensaje,
+                EstadoSolicitud.PENDIENTE
+        );
+
+        solicitudService.insert(nueva);
+        Toast.makeText(this, "Solicitud enviada", Toast.LENGTH_SHORT).show();
+        finish();
     }
 }

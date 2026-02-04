@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -28,23 +29,22 @@ public class RateParticipantActivity extends AppCompatActivity {
 
     // Componentes de la interfaz
     private Spinner spinnerEdiciones, spinnerGalas;
-    private RatingBar ratingBar; // Las estrellas
+    private RatingBar ratingBar;
     private Button btnEnviar;
-    private TextView tvNombre, tvRatingValue; // Nombre del concursante y texto "Puntuación: 3/5"
+    private TextView tvNombre, tvRatingValue;
     private ImageView ivFoto;
 
-    // Servicios de BD
+    // Servicios para interactuar con la base de datos Room
     private EdicionService edicionService;
     private GalaService galaService;
     private PuntuacionService puntuacionService;
 
-    // Variables de datos
+    // Variables de control y datos del Intent
     private int concursanteId, espectadorId;
-    // Estos "preSelected" vienen de la pantalla anterior para que el spinner ya salga en la posición correcta
     private int preSelectedEdicionId, preSelectedGalaId;
     private String concursanteNombre, concursanteFoto;
 
-    // Listas para rellenar los selectores (Spinners)
+    // Listas para manejar los datos de los selectores
     private List<Edicion> listaEdiciones = new ArrayList<>();
     private List<Gala> listaGalas = new ArrayList<>();
 
@@ -53,41 +53,40 @@ public class RateParticipantActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rate_participant);
 
-        // 1. Recuperar info del Intent (quién soy y a quién voto)
+        // 1. Recuperamos la información del concursante y el contexto de la gala
         recuperarDatosIntent();
 
         initViews();
         initServices();
 
-        // 2. Pintar datos básicos
+        // 2. Mostramos los datos del concursante en la cabecera
         tvNombre.setText(concursanteNombre);
         cargarImagenConcursante();
 
-        // 3. Iniciar la carga de datos (Ediciones -> Galas -> Estado Voto)
+        // 3. Iniciamos la carga en cascada de los selectores
         cargarEdiciones();
 
-        // Listener para actualizar el texto cuando cambias las estrellas
+        // Actualizamos el texto informativo según se muevan las estrellas
         ratingBar.setOnRatingBarChangeListener((rb, rating, fromUser) ->
                 tvRatingValue.setText("Puntuación: " + (int)rating + "/5")
         );
 
         btnEnviar.setOnClickListener(v -> enviarVoto());
 
-        // Botón volver
+        // Botón para cerrar la actividad sin guardar
         findViewById(R.id.tvBack).setOnClickListener(v -> finish());
     }
 
-    // Obtiene los datos enviados desde ParticipantsListActivity o ParticipantPublicActivity
     private void recuperarDatosIntent() {
         concursanteId = getIntent().getIntExtra("CONCURSANTE_ID", -1);
         concursanteNombre = getIntent().getStringExtra("CONCURSANTE_NOMBRE");
         concursanteFoto = getIntent().getStringExtra("CONCURSANTE_FOTO");
 
-        // IDs opcionales para pre-seleccionar en los spinners
+        // Si venimos de una gala específica, guardamos los IDs para pre-seleccionar los Spinners
         preSelectedEdicionId = getIntent().getIntExtra("GALA_EDICION_ID", -1);
         preSelectedGalaId = getIntent().getIntExtra("GALA_ID", -1);
 
-        // ID del usuario logueado (Espectador)
+        // Obtenemos el ID del espectador que está logueado
         SharedPreferences prefs = getSharedPreferences("granZMUser", MODE_PRIVATE);
         espectadorId = prefs.getInt("id", -1);
     }
@@ -108,8 +107,8 @@ public class RateParticipantActivity extends AppCompatActivity {
         puntuacionService = new PuntuacionService(this);
     }
 
-    // Carga la foto usando Picasso (URL) o recursos locales
     private void cargarImagenConcursante() {
+        // Lógica para cargar la foto: soporta URL de internet (Picasso) o recurso local
         if (concursanteFoto != null) {
             if(concursanteFoto.startsWith("http")) {
                 Picasso.get().load(concursanteFoto).placeholder(R.drawable.ic_default_avatar).into(ivFoto);
@@ -123,7 +122,6 @@ public class RateParticipantActivity extends AppCompatActivity {
         }
     }
 
-    // Paso 1 de la carga: Obtener Ediciones
     private void cargarEdiciones() {
         edicionService.listarEdiciones().observe(this, ediciones -> {
             if (ediciones != null && !ediciones.isEmpty()) {
@@ -131,19 +129,30 @@ public class RateParticipantActivity extends AppCompatActivity {
                 List<String> labels = new ArrayList<>();
                 int pos = 0;
 
-                // Creamos lista de nombres y buscamos la posición preseleccionada
                 for (int i = 0; i < ediciones.size(); i++) {
                     labels.add("Edición " + ediciones.get(i).getId());
                     if (ediciones.get(i).getId() == preSelectedEdicionId) pos = i;
                 }
 
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(RateParticipantActivity.this, R.layout.spinner_rol_item, labels);
-                adapter.setDropDownViewResource(R.layout.spinner_rol_item); // Usamos el mismo diseño para el dropdown
-                spinnerEdiciones.setAdapter(adapter);
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.spinner_rol_item, labels) {
+                    @Override
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        TextView v = (TextView) super.getView(position, convertView, parent);
+                        v.setTextColor(Color.WHITE);
+                        return v;
+                    }
+                    @Override
+                    public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                        TextView v = (TextView) super.getDropDownView(position, convertView, parent);
+                        v.setTextColor(Color.BLACK);
+                        return v;
+                    }
+                };
 
+                spinnerEdiciones.setAdapter(adapter);
                 spinnerEdiciones.setSelection(pos);
 
-                // Al cambiar de edición, cargamos sus galas
+                // Al cambiar la edición, cargamos sus galas correspondientes
                 spinnerEdiciones.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> p, View v, int position, long id) {
@@ -152,18 +161,13 @@ public class RateParticipantActivity extends AppCompatActivity {
                     @Override public void onNothingSelected(AdapterView<?> p) {}
                 });
 
-                // Carga inicial forzada
                 if (!listaEdiciones.isEmpty()) {
                     cargarGalasDeEdicion(listaEdiciones.get(pos).getId());
                 }
-
-            } else {
-                Toast.makeText(this, "No hay ediciones disponibles", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // Paso 2 de la carga: Obtener Galas de la edición seleccionada
     private void cargarGalasDeEdicion(int editionId) {
         galaService.getGalasByEdicion(editionId).observe(this, galas -> {
             listaGalas = (galas != null) ? galas : new ArrayList<>();
@@ -172,7 +176,7 @@ public class RateParticipantActivity extends AppCompatActivity {
 
             if (listaGalas.isEmpty()) {
                 nombres.add("Sin galas");
-                bloquearBoton("No hay galas", Color.GRAY); // Si no hay galas, no se puede votar
+                bloquearBoton("No hay galas", Color.GRAY);
                 spinnerGalas.setEnabled(false);
             } else {
                 spinnerGalas.setEnabled(true);
@@ -181,17 +185,27 @@ public class RateParticipantActivity extends AppCompatActivity {
                     if (listaGalas.get(i).getId() == preSelectedGalaId) pos = i;
                 }
             }
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.spinner_rol_item, nombres) {
+                @Override
+                public View getView(int position, View convertView, ViewGroup parent) {
+                    TextView v = (TextView) super.getView(position, convertView, parent);
+                    v.setTextColor(Color.WHITE);
+                    return v;
+                }
+                @Override
+                public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                    TextView v = (TextView) super.getDropDownView(position, convertView, parent);
+                    v.setTextColor(Color.BLACK);
+                    return v;
+                }
+            };
 
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(RateParticipantActivity.this, R.layout.spinner_rol_item, nombres);
-            adapter.setDropDownViewResource(R.layout.spinner_rol_item);
             spinnerGalas.setAdapter(adapter);
 
             if (!listaGalas.isEmpty()) {
                 spinnerGalas.setSelection(pos);
-                // Validamos la gala seleccionada inicialmente
                 evaluarEstadoGala(listaGalas.get(pos));
 
-                // Si cambia la gala, re-evaluamos si se puede votar
                 spinnerGalas.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -203,66 +217,62 @@ public class RateParticipantActivity extends AppCompatActivity {
         });
     }
 
-    // LÓGICA DE VALIDACIÓN (Reglas de negocio)
+    // Lógica de negocio: Comprobamos si la gala es apta para recibir votos
     private void evaluarEstadoGala(Gala gala) {
         LocalDate hoy = LocalDate.now();
 
-        // Regla 1: No se puede votar en galas futuras
+        // 1. Gala futura
         if (gala.getFecha().isAfter(hoy)) {
             bloquearBoton("Gala no comenzada", Color.DKGRAY);
         }
-        // Regla 2: No se puede votar en galas pasadas (margen de 1 día)
+        // 2. Gala terminada (más de 1 día de antigüedad)
         else if (gala.getFecha().isBefore(hoy.minusDays(1))) {
             bloquearBoton("Plazo cerrado", Color.RED);
         }
-        // Regla 3: Si la fecha es válida, comprobamos si YA votó
+        // 3. Gala en curso: verificamos si el usuario ya emitió su voto
         else {
             verificarSiYaVoto(gala.getId());
         }
     }
 
-    // Consulta a la BD si existe un voto de este usuario para este concursante en esta gala
     private void verificarSiYaVoto(int galaId) {
         puntuacionService.haVotado(galaId, espectadorId, concursanteId).observe(this, yaVotado -> {
             if (yaVotado != null && yaVotado) {
-                bloquearBoton("Ya has votado", Color.parseColor("#FF9800")); // Naranja
+                bloquearBoton("Ya has votado", Color.parseColor("#FF9800"));
             } else {
-                habilitarBoton(); // Todo OK -> Se puede votar
+                habilitarBoton();
             }
         });
     }
 
-    // Metodo visual para desactivar el botón y cambiar su color
+    // Cambia el estado del botón de envío para impedir acciones prohibidas
     private void bloquearBoton(String msg, int color) {
         btnEnviar.setEnabled(false);
         btnEnviar.setText(msg);
         btnEnviar.setBackgroundTintList(ColorStateList.valueOf(color));
     }
 
-    // Metodo visual para reactivar el botón con el color original
     private void habilitarBoton() {
         btnEnviar.setEnabled(true);
         btnEnviar.setText("Confirmar Voto");
         btnEnviar.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorPrimary)));
     }
 
-    // Acción final: Guardar en base de datos
     private void enviarVoto() {
         int pos = spinnerGalas.getSelectedItemPosition();
         if (pos < 0 || listaGalas.isEmpty()) return;
 
-        // Validación de seguridad por si acaso
         int rating = (int) ratingBar.getRating();
-        if (rating < 1 || rating > 5) {
-            Toast.makeText(this, "Puntuación inválida", Toast.LENGTH_SHORT).show();
+        if (rating < 1) {
+            Toast.makeText(this, "Selecciona al menos 1 estrella", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Creamos el objeto Puntuacion y lo guardamos
+        // Creamos y guardamos el objeto puntuación en Room
         Puntuacion voto = new Puntuacion(espectadorId, concursanteId, listaGalas.get(pos).getId(), rating, LocalDate.now());
         puntuacionService.puntuar(voto);
 
         Toast.makeText(this, "¡Votado!", Toast.LENGTH_SHORT).show();
-        finish(); // Cerramos la pantalla al terminar
+        finish();
     }
 }

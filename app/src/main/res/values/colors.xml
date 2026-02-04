@@ -22,4 +22,5 @@
     <color name="button_menu_bg">#2A2A3A</color>
     <color name="button_logout_bg">#C54C3A</color>
     <color name="button_delete_bg">#FF4444</color>
+    <color name="fondo_splash">#121212</color>
 </resources>
